@@ -3,6 +3,12 @@ import 'package:provider/provider.dart';
 import '../../providers/auth_provider.dart';
 import '../auth/login_screen.dart';
 
+// Import file manajemen & form edit
+import 'edit_materi_screen.dart';
+import 'edit_quiz_screen.dart';
+import 'manage_materi_screen.dart';
+import 'manage_quiz_screen.dart';
+
 class AdminDashboard extends StatefulWidget {
   const AdminDashboard({Key? key}) : super(key: key);
 
@@ -22,6 +28,44 @@ class _AdminDashboardState extends State<AdminDashboard> {
     );
   }
 
+  // Fungsi Helper untuk Dialog Tambah Pembelajaran/Kategori Baru
+  void _showTambahKategoriDialog(BuildContext context) {
+    final TextEditingController _kategoriController = TextEditingController();
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text("Tambah Pembelajaran Baru", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+        content: TextField(
+          controller: _kategoriController,
+          decoration: const InputDecoration(
+            hintText: "Masukkan nama materi (Contoh: PHP, Python)",
+            hintStyle: TextStyle(fontSize: 14, color: Colors.grey),
+            border: OutlineInputBorder(),
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text("Batal", style: TextStyle(color: Colors.grey)),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF6B11D6)),
+            onPressed: () {
+              final namaKategori = _kategoriController.text.trim();
+              if (namaKategori.isNotEmpty) {
+                Navigator.pop(context);
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text("Kategori '$namaKategori' berhasil dibuat!")),
+                );
+              }
+            },
+            child: const Text("Simpan", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -30,7 +74,6 @@ class _AdminDashboardState extends State<AdminDashboard> {
         index: _currentTabIndex,
         children: [
           _buildHomeTab(),           
-          _buildKelolaMateriTab(),  
           _buildSettingsTab(),      
         ],
       ),
@@ -69,14 +112,7 @@ class _AdminDashboardState extends State<AdminDashboard> {
             BottomNavigationBarItem(
               icon: Padding(
                 padding: const EdgeInsets.all(4.0),
-                child: Icon(_currentTabIndex == 1 ? Icons.assignment_rounded : Icons.assignment_outlined),
-              ),
-              label: 'Konten',
-            ),
-            BottomNavigationBarItem(
-              icon: Padding(
-                padding: const EdgeInsets.all(4.0),
-                child: Icon(_currentTabIndex == 2 ? Icons.settings_rounded : Icons.settings_outlined),
+                child: Icon(_currentTabIndex == 1 ? Icons.settings_rounded : Icons.settings_outlined),
               ),
               label: 'Settings',
             ),
@@ -86,7 +122,7 @@ class _AdminDashboardState extends State<AdminDashboard> {
     );
   }
 
-  // ================= TAB 1: BERANDA / HOME TAB =================
+  // ================= TAB 1: BERANDA / HOME TAB (GABUNGAN) =================
   Widget _buildHomeTab() {
     return Scaffold(
       backgroundColor: const Color(0xFFF8F9FA),
@@ -112,6 +148,7 @@ class _AdminDashboardState extends State<AdminDashboard> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              // BANNER SELAMAT DATANG
               Container(
                 width: double.infinity,
                 padding: const EdgeInsets.all(24.0),
@@ -141,7 +178,7 @@ class _AdminDashboardState extends State<AdminDashboard> {
                     ),
                     const SizedBox(height: 12),
                     Text(
-                      "pantau perkembangan pembelajaran dan kelola ekosistem akademik anda dalam satu tampilan dashboard yang terintegrasi.",
+                      "Pantau perkembangan pembelajaran dan kelola ekosistem akademik anda dalam satu tampilan dashboard yang terintegrasi.",
                       textAlign: TextAlign.center,
                       style: TextStyle(
                         color: Colors.white.withValues(alpha: 0.8),
@@ -149,41 +186,17 @@ class _AdminDashboardState extends State<AdminDashboard> {
                         height: 1.4,
                       ),
                     ),
-                    const SizedBox(height: 20),
-                    SizedBox(
-                      width: 180,
-                      height: 42,
-                      child: ElevatedButton.icon(
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.white,
-                          foregroundColor: const Color(0xFF6B11D6),
-                          elevation: 0,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                        ),
-                        onPressed: () {
-                          setState(() {
-                            _currentTabIndex = 1; 
-                          });
-                        },
-                        icon: const Icon(Icons.edit_note_rounded, size: 20),
-                        label: const Text("Kelola Materi", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
-                      ),
-                    ),
                   ],
                 ),
               ),
-              const SizedBox(height: 30),
+              const SizedBox(height: 24),
+
+              // STATISTIK UTAMA
               const Text(
                 "Statistik Utama",
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                  color: Color(0xFF1E293B),
-                ),
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Color(0xFF1E293B)),
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: 12),
               Container(
                 width: double.infinity,
                 padding: const EdgeInsets.all(20.0),
@@ -243,126 +256,91 @@ class _AdminDashboardState extends State<AdminDashboard> {
                   ],
                 ),
               ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
+              const SizedBox(height: 28),
 
-  // ================= TAB 2: KELOLA MATERI TAB =================
-  Widget _buildKelolaMateriTab() {
-    return Scaffold(
-      backgroundColor: const Color(0xFFF8F9FA),
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        scrolledUnderElevation: 0,
-        centerTitle: true,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Color(0xFF1E293B), size: 18),
-          onPressed: () {
-            setState(() {
-              _currentTabIndex = 0; 
-            });
-          },
-        ),
-        title: const Text(
-          "Kelola Materi",
-          style: TextStyle(color: Color(0xFF1E293B), fontWeight: FontWeight.bold, fontSize: 18),
-        ),
-        actions: const [
-          Padding(
-            padding: EdgeInsets.only(right: 16.0),
-            child: CircleAvatar(
-              backgroundColor: Color(0xFFE2E8F0),
-              radius: 18,
-              child: Icon(Icons.person_rounded, color: Color(0xFF64748B), size: 20),
-            ),
-          )
-        ],
-      ),
-      body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 10.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Container(
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(14),
-                  border: Border.all(color: const Color(0xFFE2E8F0), width: 1.5),
-                ),
-                child: const TextField(
-                  decoration: InputDecoration(
-                    hintText: "Cari Materi Pembelajaran....",
-                    hintStyle: TextStyle(color: Color(0xFF94A3B8), fontSize: 14),
-                    prefixIcon: Icon(Icons.search_rounded, color: Color(0xFF94A3B8), size: 22),
-                    border: InputBorder.none,
-                    contentPadding: EdgeInsets.symmetric(vertical: 14),
+              // SECTION KELOLA KONTEN (PINDAHAN DARI TAB KONTEN)
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const Text(
+                    "Kelola Materi & Kuis",
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Color(0xFF1E293B)),
                   ),
-                ),
+                  // Tombol Tambah Baru untuk Pembelajaran Baru berada di sini
+                  SizedBox(
+                    height: 34,
+                    child: ElevatedButton.icon(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFF6B11D6),
+                        elevation: 0,
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                        padding: const EdgeInsets.symmetric(horizontal: 12),
+                      ),
+                      onPressed: () {
+                        _showTambahKategoriDialog(context);
+                      },
+                      icon: const Icon(Icons.add, color: Colors.white, size: 16),
+                      label: const Text(
+                        "Tambah Baru",
+                        style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 12),
+                      ),
+                    ),
+                  ),
+                ],
               ),
               const SizedBox(height: 16),
-              SizedBox(
-                height: 42,
-                child: ElevatedButton.icon(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF6B11D6),
-                    elevation: 0,
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                    padding: const EdgeInsets.symmetric(horizontal: 16),
-                  ),
-                  onPressed: () {},
-                  icon: const Icon(Icons.add, color: Colors.white, size: 18),
-                  label: const Text(
-                    "Tambah Baru",
-                    style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 24),
 
-              // LIST KARTU MANAJEMEN MATERI MENGGUNAKAN LOGO ASSET .PNG
+              // DAFTAR KARTU PEMBELAJARAN
               _buildAdminMateriCard(
-                imageAssetPath: "assets/images/html_logo.png", // <--- Ganti sesuai folder asetmu
+                imageAssetPath: "assets/images/html_logo.png",
                 kategoriBadge: "HTML",
                 badgeBg: const Color(0xFFFFEFE5),
                 badgeText: const Color(0xFFFF7A22),
                 borderColor: const Color(0xFFFF7A22),
                 title: "Dasar-Dasar HTML",
                 subtitle: "Kuasai komponen struktural web",
-                onEditKuis: () {},
-                onEditMateri: () {},
+                onEditKuis: () {
+                  Navigator.push(context, MaterialPageRoute(builder: (_) => const ManageQuizScreen(judulKategori: "HTML")));
+                },
+                onEditMateri: () {
+                  Navigator.push(context, MaterialPageRoute(builder: (_) => const ManageMateriScreen(judulKategori: "HTML")));
+                },
               ),
-              const SizedBox(height: 18),
+              const SizedBox(height: 16),
 
               _buildAdminMateriCard(
-                imageAssetPath: "assets/images/css_logo.png",  // <--- Ganti sesuai folder asetmu
+                imageAssetPath: "assets/images/css_logo.png",
                 kategoriBadge: "CSS",
                 badgeBg: const Color(0xFFEBF4FF),
                 badgeText: const Color(0xFF2196F3),
                 borderColor: const Color(0xFF2196F3),
                 title: "Dasar-Dasar CSS",
                 subtitle: "Kuasai gaya komponen visual web",
-                onEditKuis: () {},
-                onEditMateri: () {},
+                onEditKuis: () {
+                  Navigator.push(context, MaterialPageRoute(builder: (_) => const ManageQuizScreen(judulKategori: "CSS")));
+                },
+                onEditMateri: () {
+                  Navigator.push(context, MaterialPageRoute(builder: (_) => const ManageMateriScreen(judulKategori: "CSS")));
+                },
               ),
-              const SizedBox(height: 18),
+              const SizedBox(height: 16),
 
               _buildAdminMateriCard(
-                imageAssetPath: "assets/images/js_logo.png",   // <--- Ganti sesuai folder asetmu
+                imageAssetPath: "assets/images/js_logo.png",
                 kategoriBadge: "JS",
                 badgeBg: const Color(0xFFFFF7E5),
                 badgeText: const Color(0xFFFFB300),
                 borderColor: const Color(0xFFFFB300),
                 title: "Dasar-Dasar JavaScript",
                 subtitle: "Kuasai logika manipulasi web",
-                onEditKuis: () {},
-                onEditMateri: () {},
+                onEditKuis: () {
+                  Navigator.push(context, MaterialPageRoute(builder: (_) => const ManageQuizScreen(judulKategori: "JavaScript")));
+                },
+                onEditMateri: () {
+                  Navigator.push(context, MaterialPageRoute(builder: (_) => const ManageMateriScreen(judulKategori: "JavaScript")));
+                },
               ),
-              const SizedBox(height: 20),
+              const SizedBox(height: 24),
             ],
           ),
         ),
@@ -426,13 +404,11 @@ class _AdminDashboardState extends State<AdminDashboard> {
                         style: TextStyle(color: badgeText, fontWeight: FontWeight.bold, fontSize: 12),
                       ),
                     ),
-                    // Menampilkan Gambar Logo PNG secara elegan di sudut kanan atas kartu
                     Image.asset(
                       imageAssetPath,
                       width: 28,
                       height: 28,
                       errorBuilder: (context, error, stackTrace) {
-                        // Backup jika path salah agar aplikasi tidak crash
                         return Icon(Icons.code_rounded, color: badgeText, size: 24);
                       },
                     ),
@@ -485,7 +461,7 @@ class _AdminDashboardState extends State<AdminDashboard> {
     );
   }
 
-  // ================= TAB 3: SETTINGS TAB =================
+  // ================= TAB 2: SETTINGS TAB =================
   Widget _buildSettingsTab() {
     return Scaffold(
       backgroundColor: const Color(0xFFF8F9FA),
