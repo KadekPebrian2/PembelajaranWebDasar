@@ -50,7 +50,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     SizedBox(height: 15),
                     Text(
                       "Buat Akun Baru",
-                      style: TextStyle(color: Colors.white, fontSize: 24, fontWeight: FontWeight.bold),
+                      style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 24,
+                          fontWeight: FontWeight.bold),
                     ),
                     Text(
                       "Lengkapi data untuk mendaftar",
@@ -60,21 +63,23 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 ),
               ),
             ),
-            
+
             // Form Registrasi
             Padding(
               padding: const EdgeInsets.all(30.0),
               child: Column(
                 children: [
-                  _buildTextField("Nama Lengkap", Icons.person, _namaCtrl, false),
+                  _buildTextField(
+                      "Nama Lengkap", Icons.person, _namaCtrl, false),
                   const SizedBox(height: 15),
                   _buildTextField("Email", Icons.email, _emailCtrl, false),
                   const SizedBox(height: 15),
                   _buildTextField("Password", Icons.lock, _passCtrl, true),
                   const SizedBox(height: 15),
-                  _buildTextField("Konfirmasi Password", Icons.lock_outline, _confirmPassCtrl, true),
+                  _buildTextField("Konfirmasi Password", Icons.lock_outline,
+                      _confirmPassCtrl, true),
                   const SizedBox(height: 30),
-                  
+
                   // Tombol Daftar
                   SizedBox(
                     width: double.infinity,
@@ -82,7 +87,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     child: ElevatedButton(
                       style: ElevatedButton.styleFrom(
                         backgroundColor: AppTheme.primaryPurple,
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(15)),
                       ),
                       onPressed: () async {
                         String nama = _namaCtrl.text.trim();
@@ -90,48 +96,91 @@ class _RegisterScreenState extends State<RegisterScreen> {
                         String password = _passCtrl.text.trim();
                         String confirmPassword = _confirmPassCtrl.text.trim();
 
-                        // Validasi sederhana
+                        // 1. Validasi Kolom Kosong
                         if (nama.isEmpty || email.isEmpty || password.isEmpty) {
                           ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(content: Text("Semua kolom harus diisi!"), backgroundColor: Colors.red),
+                            const SnackBar(
+                                content: Text("Semua kolom harus diisi!"),
+                                backgroundColor: Colors.red),
                           );
                           return;
                         }
 
+                        // 2. Validasi Format Email Publik (Gmail, Yahoo, Outlook)
+                        final emailRegex = RegExp(
+                            r'^[\w-\.]+@(gmail\.com|yahoo\.com|yahoo\.co\.id|outlook\.com|hotmail\.com)$',
+                            caseSensitive: false);
+                        if (!emailRegex.hasMatch(email)) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text(
+                                  "Pendaftaran hanya mendukung email publik! (Gmail, Yahoo, atau Outlook)"),
+                              backgroundColor: Colors.orange,
+                            ),
+                          );
+                          return;
+                        }
+
+                        // 3. BARU: Validasi Panjang Minimal Password (Minimal 6 Karakter)
+                        if (password.length < 6) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text(
+                                  "Kata sandi terlalu pendek! Minimal harus 6 karakter."),
+                              backgroundColor: Colors.orange,
+                            ),
+                          );
+                          return; // Menghentikan proses jika kurang dari 6 karakter
+                        }
+
+                        // 4. Validasi Konfirmasi Password
                         if (password != confirmPassword) {
                           ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(content: Text("Password tidak cocok!"), backgroundColor: Colors.red),
+                            const SnackBar(
+                                content: Text("Password tidak cocok!"),
+                                backgroundColor: Colors.red),
                           );
                           return;
                         }
 
                         // Simpan ke SQLite Database
                         try {
-                          await DatabaseHelper.instance.registerUser(nama, email, password);
-                          
+                          await DatabaseHelper.instance
+                              .registerUser(nama, email, password);
+
                           if (!mounted) return;
-                          
+
                           ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(content: Text("Pendaftaran Berhasil! Silakan Login."), backgroundColor: Colors.green),
+                            const SnackBar(
+                                content: Text(
+                                    "Pendaftaran Berhasil! Silakan Login."),
+                                backgroundColor: Colors.green),
                           );
 
                           // Arahkan kembali ke halaman Login
                           Navigator.pushReplacement(
-                            context, 
-                            MaterialPageRoute(builder: (_) => const LoginScreen())
-                          );
+                              context,
+                              MaterialPageRoute(
+                                  builder: (_) => const LoginScreen()));
                         } catch (e) {
                           // Jika email sudah ada di SQLite
                           ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(content: Text("Email sudah terdaftar! Gunakan email lain."), backgroundColor: Colors.red),
+                            const SnackBar(
+                                content: Text(
+                                    "Email sudah terdaftar! Gunakan email lain."),
+                                backgroundColor: Colors.red),
                           );
                         }
                       },
-                      child: const Text("Daftar", style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold)),
+                      child: const Text("Daftar",
+                          style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold)),
                     ),
                   ),
                   const SizedBox(height: 15),
-                  
+
                   // Tombol Login (Jika sudah punya akun)
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
@@ -140,9 +189,15 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       GestureDetector(
                         onTap: () {
                           // Arahkan kembali ke halaman Login
-                          Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => const LoginScreen()));
+                          Navigator.pushReplacement(
+                              context,
+                              MaterialPageRoute(
+                                  builder: (_) => const LoginScreen()));
                         },
-                        child: const Text("Masuk", style: TextStyle(color: AppTheme.primaryPurple, fontWeight: FontWeight.bold)),
+                        child: const Text("Masuk",
+                            style: TextStyle(
+                                color: AppTheme.primaryPurple,
+                                fontWeight: FontWeight.bold)),
                       )
                     ],
                   )
@@ -156,7 +211,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
   }
 
   // Widget bantuan untuk TextField
-  Widget _buildTextField(String hint, IconData icon, TextEditingController controller, bool isPassword) {
+  Widget _buildTextField(String hint, IconData icon,
+      TextEditingController controller, bool isPassword) {
     return Container(
       decoration: BoxDecoration(
         color: const Color(0xFFF9FAFB),
