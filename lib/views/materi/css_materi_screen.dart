@@ -4,121 +4,43 @@ import 'materi_detail_screen.dart';
 class CssMateriScreen extends StatelessWidget {
   const CssMateriScreen({Key? key}) : super(key: key);
 
-  final List<Map<String, String>> cssTopics = const [
-    {
-      "id": "1",
-      "title": "Sintaks & Selektor",
-      "subtitle": "Cara Kerja & Target Elemen",
-      "content": '''
-CSS singkatan dari Cascading Style Sheets. CSS digunakan untuk mengatur gaya visual (desain) dari halaman web yang dibuat menggunakan HTML.
-
-SINTAKS CSS:
-Aturan CSS terdiri dari sebuah selector dan sebuah declaration block.
-Format: selector { property: value; }
-
-Contoh:
-h1 {
-  color: blue;
-  font-size: 12px;
-}
-• h1 adalah Selector (menunjuk elemen HTML yang mau diubah).
-• color adalah Property (fitur yang mau diubah).
-• blue adalah Value (nilai baru untuk properti tersebut).
-
-3 MACAM SELEKTOR UTAMA:
-1. Element Selector: Memilih elemen berdasarkan nama tag.
-   Contoh: p { text-align: center; }
-2. Id Selector (#): Memilih elemen spesifik berdasarkan atribut id.
-   Contoh: #judulUtama { color: red; }
-3. Class Selector (.): Memilih kelompok elemen yang memiliki atribut class yang sama.
-   Contoh: .teks-hijau { color: green; }''',
-    },
-    {
-      "id": "2",
-      "title": "Cara Menambahkan CSS",
-      "subtitle": "External, Internal, & Inline",
-      "content": '''
-Ada 3 cara untuk menuliskan atau memasukkan kode CSS ke dalam dokumen HTML Anda menurut standar W3Schools:
-
-1. External CSS:
-   Kode CSS ditulis di file terpisah dengan ekstensi .css, lalu dipanggil di dalam tag <head> HTML menggunakan tag <link>. Cara ini adalah yang paling direkomendasikan karena codingan HTML dan CSS terpisah rapi.
-   Contoh:
-   <link rel="stylesheet" href="style.css">
-
-2. Internal CSS:
-   Kode CSS ditulis langsung di dalam satu file HTML, diletakkan di dalam tag <style> yang berada di area <head>. Cocok jika satu halaman tersebut memiliki gaya yang unik sendiri.
-   Contoh:
-   <head>
-     <style>
-       body { background-color: linen; }
-     </style>
-   </head>
-
-3. Inline CSS:
-   Kode CSS ditulis langsung menempel pada tag HTML yang bersangkutan menggunakan atribut 'style'. Cara ini kurang disarankan untuk skala besar karena membuat file HTML menjadi sangat panjang dan kotor.
-   Contoh:
-   <h1 style="color:blue; text-align:center;">Judul Biru</h1>''',
-    },
-    {
-      "id": "3",
-      "title": "Warna & Background",
-      "subtitle": "Pewarnaan Elemen Web",
-      "content": '''
-CSS WARNA (Colors):
-Warna dalam CSS bisa ditentukan dengan beberapa cara:
-1. Menggunakan Nama Warna Resmi: red, tomato, dodgerblue, gray, dll.
-2. Menggunakan Nilai HEX: #ff5733
-3. Menggunakan Nilai RGB: rgb(255, 99, 71)
-
-Properti Warna Teks:
-Gunakan properti 'color' untuk mengubah warna teks.
-Contoh: p { color: violet; }
-
-CSS BACKGROUND:
-Properti background digunakan untuk memberikan efek visual pada latar belakang suatu elemen web.
-• background-color: Mengubah warna latar.
-  Contoh: body { background-color: lightblue; }
-• background-image: Memasang gambar sebagai latar belakang.
-  Contoh: body { background-image: url("awan.png"); }
-• background-repeat: Mengatur apakah gambar latar boleh mengulang (repeat) jika ukuran layar terlalu besar atau cukup sekali saja (no-repeat).''',
-    },
-    {
-      "id": "4",
-      "title": "CSS Box Model",
-      "subtitle": "Margin, Border, & Padding",
-      "content": '''
-Box Model adalah konsep paling penting dalam tata letak (layouting) CSS. Semua elemen HTML dapat dianggap sebagai sebuah kotak kotak ("box").
-
-Dalam CSS, Box Model membungkus elemen HTML dan terdiri dari beberapa lapisan (dari dalam ke luar):
-
-1. Content (Konten): Tempat di mana teks atau gambar sebenarnya dari elemen tersebut berada.
-2. Padding (Bantalan Dalam): Membersihkan area di SEKITAR konten. Padding bersifat transparan dan berada di dalam border.
-   Contoh: p { padding: 20px; }
-3. Border (Bingkai): Garis yang membungkus padding dan konten.
-   Contoh: p { border: 2px solid black; }
-4. Margin (Jarak Luar): Membersihkan area di LUAR border. Margin digunakan untuk mengatur jarak antar elemen HTML agar tidak saling menempel.
-   Contoh: p { margin: 15px; }''',
-    },
-  ];
-
   @override
   Widget build(BuildContext context) {
-    const primaryBlue = Color(0xFF2196F3); // Tema Warna CSS
+    const cssColor = Color(0xFF2196F3);
+
+    final List<Map<String, dynamic>> cssChapters = [
+      {
+        "id": "1",
+        "title": "Sintaks Dasar & Aturan Selektor CSS",
+        "subtitle": "Menguasai cara menghias halaman web",
+        "isi": [
+          {"type": "header", "value": "1. Mengapa Kita Membutuhkan CSS?"},
+          {"type": "text", "value": "CSS (Cascading Style Sheets) adalah bahasa desain yang digunakan untuk mengatur tampilan visual dari dokumen HTML. Jika HTML berfungsi untuk membuat struktur teks dan tombol, maka CSS berfungsi untuk mewarnai, mengatur font, mengatur ukuran elemen, hingga menentukan tata letak (layout) agar website terlihat indah dan profesional di layar HP maupun laptop."},
+          {"type": "header", "value": "2. Tiga Komponen Utama Aturan CSS"},
+          {"type": "text", "value": "Kode CSS ditulis dengan aturan yang baku dan memiliki struktur yang terbagi menjadi tiga bagian penting, yaitu: Selector (Target elemen), Property (Jenis gaya), dan Value (Nilai gaya)."},
+          {"type": "header", "value": "3. Contoh Penulisan Kode CSS"},
+          {"type": "text", "value": "Berikut adalah bentuk penulisan standar blok deklarasi CSS untuk menghias elemen HTML:"},
+          {
+            "type": "code",
+            "value": "p {\n  color: #2196F3;\n  font-size: 16px;\n  text-align: center;\n}"
+          },
+          {"type": "header", "value": "4. Bedah Aturan dan Cara Kerja"},
+          {"type": "text", "value": "• p (Selector) : Bagian ini bertugas menunjuk target elemen HTML mana yang ingin diubah gayanya. Pada contoh di atas, kita menargetkan semua tag paragraf (<p>) yang ada di dokumen web.\n\n• color (Property) : Atribut visual apa yang ingin kita ubah. Di baris pertama, kita ingin mengubah warna teks dari paragraf tersebut.\n\n• #2196F3 (Value) : Nilai baru yang diberikan kepada property. Di sini kita menggunakan kode warna Hexadecimal untuk menghasilkan warna biru cerah.\n\n• Kurung Kurawal { ... } : Blok pembungkus yang menandakan awal dan akhir dari seluruh instruksi dekorasi gaya untuk selector terkait."},
+          {"type": "tip", "value": "Setiap kali Anda selesai menulis satu baris property dan value, Anda wajib menutupnya dengan tanda titik koma ( ; ). Jika lupa, web browser akan bingung membaca baris berikutnya dan seluruh desain web Anda bisa gagal dimuat!"},
+        ]
+      }
+    ];
 
     return Scaffold(
       backgroundColor: const Color(0xFFF8F9FA),
       body: Column(
         children: [
-          // HEADER BIRU
           Container(
             width: double.infinity,
-            padding: const EdgeInsets.only(top: 50, bottom: 30, left: 20, right: 20),
+            padding: const EdgeInsets.only(top: 50, bottom: 25, left: 20, right: 20),
             decoration: const BoxDecoration(
-              color: primaryBlue,
-              borderRadius: BorderRadius.only(
-                bottomLeft: Radius.circular(30),
-                bottomRight: Radius.circular(30),
-              ),
+              color: cssColor,
+              borderRadius: BorderRadius.only(bottomLeft: Radius.circular(24), bottomRight: Radius.circular(24)),
             ),
             child: Row(
               children: [
@@ -130,99 +52,63 @@ Dalam CSS, Box Model membungkus elemen HTML dan terdiri dari beberapa lapisan (d
                 const Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text("CSS Dasar", style: TextStyle(color: Colors.white, fontSize: 22, fontWeight: FontWeight.bold)),
-                    Text("Belajar styling dan layouting", style: TextStyle(color: Colors.white70, fontSize: 14)),
+                    Text("CSS Dasar", style: TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold)),
+                    Text("1 Bab Terfokus", style: TextStyle(color: Colors.white70, fontSize: 13)),
                   ],
                 ),
               ],
             ),
           ),
-
-          // LIST MATERI
           Expanded(
             child: ListView.builder(
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 15),
-              itemCount: cssTopics.length,
+              padding: const EdgeInsets.all(20),
+              itemCount: cssChapters.length,
               itemBuilder: (context, index) {
-                final topic = cssTopics[index];
-                return _buildTopicCard(context, topic, primaryBlue, index + 1);
+                final ch = cssChapters[index];
+                return Container(
+                  margin: const EdgeInsets.only(bottom: 16),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(16),
+                    boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 10, offset: const Offset(0, 4))],
+                  ),
+                  child: ListTile(
+                    contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                    leading: Container(
+                      width: 42,
+                      height: 42,
+                      decoration: BoxDecoration(
+                        color: cssColor.withValues(alpha: 0.1),
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      alignment: Alignment.center,
+                      child: Text(
+                        ch['id'], 
+                        style: const TextStyle(color: cssColor, fontWeight: FontWeight.bold, fontSize: 16),
+                      ),
+                    ),
+                    title: Text(ch['title'], style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15, color: Color(0xFF0F172A))),
+                    subtitle: Text(ch['subtitle'], style: const TextStyle(color: Color(0xFF64748B), fontSize: 12)),
+                    trailing: const Icon(Icons.chevron_right, size: 20, color: Color(0xFFCBD5E1)),
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => MateriDetailScreen(
+                            kategori: "CSS", 
+                            title: ch['title'],
+                            konten: List<Map<String, dynamic>>.from(ch['isi']),
+                            temaColor: cssColor,
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+                );
               },
             ),
           ),
-
-          // BUTTON KUIS
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 15.0),
-            child: SizedBox(
-              width: double.infinity,
-              height: 52,
-              child: OutlinedButton(
-                style: OutlinedButton.styleFrom(
-                  side: const BorderSide(color: primaryBlue, width: 1.5),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
-                  backgroundColor: Colors.white,
-                ),
-                onPressed: () {},
-                child: const Text("Mulai Kuis CSS", style: TextStyle(color: primaryBlue, fontSize: 16, fontWeight: FontWeight.bold)),
-              ),
-            ),
-          ),
         ],
-      ),
-    );
-  }
-
-  Widget _buildTopicCard(BuildContext context, Map<String, String> topic, Color primaryColor, int nomorBab) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 15),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(15),
-        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 10, offset: const Offset(0, 4))],
-      ),
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          borderRadius: BorderRadius.circular(15),
-          onTap: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) => MateriDetailScreen(
-                  title: topic['title']!,
-                  content: topic['content']!,
-                  colorTheme: primaryColor,
-                ),
-              ),
-            );
-          },
-          child: Padding(
-            padding: const EdgeInsets.all(15.0),
-            child: Row(
-              children: [
-                Container(
-                  width: 45,
-                  height: 45,
-                  decoration: BoxDecoration(color: primaryColor.withOpacity(0.15), borderRadius: BorderRadius.circular(10)),
-                  alignment: Alignment.center,
-                  child: Text(nomorBab.toString(), style: TextStyle(color: primaryColor, fontSize: 18, fontWeight: FontWeight.bold)),
-                ),
-                const SizedBox(width: 15),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(topic['title']!, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.black87)),
-                      const SizedBox(height: 3),
-                      Text(topic['subtitle']!, style: const TextStyle(fontSize: 13, color: Colors.black54)),
-                    ],
-                  ),
-                ),
-                const Icon(Icons.chevron_right, color: Colors.black45),
-              ],
-            ),
-          ),
-        ),
       ),
     );
   }
