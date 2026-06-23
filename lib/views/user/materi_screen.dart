@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
-
-// IMPORT SUDAH DIPERBAIKI SESUAI FOLDER
+// PERBAIKAN IMPORT: Ditambahkan '../' karena file ini berada di dalam folder 'user'
 import '../materi/html_materi_screen.dart';
 import '../materi/css_materi_screen.dart';
 import '../materi/js_materi_screen.dart';
@@ -10,18 +9,14 @@ class MateriScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Warna ungu utama sesuai dengan tema desain Anda
-    const primaryPurple = Color(0xFF8200E6);
-
     return Scaffold(
-      backgroundColor: const Color(0xFFF8F9FA), // Latar belakang abu-abu sangat terang
+      backgroundColor: const Color(0xFFF8F9FA), 
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 20.0),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Judul Halaman Atas
               const Text(
                 "Materi Pembelajaran",
                 style: TextStyle(
@@ -32,14 +27,13 @@ class MateriScreen extends StatelessWidget {
               ),
               const SizedBox(height: 25),
 
-              // 1. CARD MATERI HTML
+              // 1. HTML Card dengan Logo Gambar
               _buildMenuMateri(
                 context: context,
-                badgeText: "HTML",
+                imagePath: 'assets/images/html_logo.png',
                 title: "HTML",
                 subtitle: "Belajar dasar struktur website",
-                badgeColor: primaryPurple.withValues(alpha: 0.1),
-                textColor: primaryPurple,
+                badgeColor: const Color(0xFFFFF0E5),
                 onTap: () {
                   Navigator.push(
                     context,
@@ -49,14 +43,13 @@ class MateriScreen extends StatelessWidget {
               ),
               const SizedBox(height: 16),
 
-              // 2. CARD MATERI CSS
+              // 2. CSS Card dengan Logo Gambar
               _buildMenuMateri(
                 context: context,
-                badgeText: "CSS",
+                imagePath: 'assets/images/css_logo.png',
                 title: "CSS",
                 subtitle: "Belajar styling dan layouting",
-                badgeColor: primaryPurple.withValues(alpha: 0.1),
-                textColor: primaryPurple,
+                badgeColor: const Color(0xFFEBF4FF),
                 onTap: () {
                   Navigator.push(
                     context,
@@ -66,14 +59,13 @@ class MateriScreen extends StatelessWidget {
               ),
               const SizedBox(height: 16),
 
-              // 3. CARD MATERI JAVASCRIPT
+              // 3. JavaScript Card dengan Logo Gambar
               _buildMenuMateri(
                 context: context,
-                badgeText: "JS",
+                imagePath: 'assets/images/js_logo.png',
                 title: "JavaScript",
                 subtitle: "Belajar interaktivitas website",
-                badgeColor: primaryPurple.withValues(alpha: 0.1),
-                textColor: primaryPurple,
+                badgeColor: const Color(0xFFFFF7E5),
                 onTap: () {
                   Navigator.push(
                     context,
@@ -88,14 +80,12 @@ class MateriScreen extends StatelessWidget {
     );
   }
 
-  // Widget Kustom Pembuat Card Menu agar tampilan konsisten dan rapi
   Widget _buildMenuMateri({
     required BuildContext context,
-    required String badgeText,
+    required String imagePath,
     required String title,
     required String subtitle,
     required Color badgeColor,
-    required Color textColor,
     required VoidCallback onTap,
   }) {
     return Container(
@@ -105,7 +95,7 @@ class MateriScreen extends StatelessWidget {
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.04),
+            color: Colors.black.withValues(alpha: 0.05), // PERBAIKAN: Menggunakan .withValues
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -115,32 +105,33 @@ class MateriScreen extends StatelessWidget {
         color: Colors.transparent,
         child: InkWell(
           borderRadius: BorderRadius.circular(20),
-          onTap: onTap, // Memicu perpindahan halaman saat kartu ditekan
+          onTap: onTap,
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 18.0),
             child: Row(
               children: [
-                // Kotak Badge Sebelah Kiri (HTML / CSS / JS)
                 Container(
-                  width: 50,
-                  height: 50,
+                  width: 55,
+                  height: 55,
+                  padding: const EdgeInsets.all(10.0),
                   decoration: BoxDecoration(
                     color: badgeColor,
-                    borderRadius: BorderRadius.circular(12),
+                    borderRadius: BorderRadius.circular(14),
                   ),
-                  alignment: Alignment.center,
-                  child: Text(
-                    badgeText,
-                    style: TextStyle(
-                      color: textColor,
-                      fontWeight: FontWeight.bold,
-                      fontSize: 14,
-                    ),
+                  child: Image.asset(
+                    imagePath,
+                    fit: BoxFit.contain,
+                    errorBuilder: (context, error, stackTrace) {
+                      return Center(
+                        child: Text(
+                          title.substring(0, 2).toUpperCase(),
+                          style: TextStyle(color: Colors.deepPurple.shade700, fontWeight: FontWeight.bold, fontSize: 12),
+                        ),
+                      );
+                    },
                   ),
                 ),
                 const SizedBox(width: 20),
-                
-                // Teks Judul dan Subtitle Tengah
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -164,8 +155,6 @@ class MateriScreen extends StatelessWidget {
                     ],
                   ),
                 ),
-                
-                // Panah Chevron Kanan
                 const Icon(
                   Icons.chevron_right,
                   color: Colors.grey,

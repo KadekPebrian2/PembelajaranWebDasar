@@ -30,7 +30,7 @@ class HomeScreen extends StatelessWidget {
                       right: -50,
                       child: CircleAvatar(
                         radius: 90,
-                        backgroundColor: Color(0x1AFFFFFF), // Putih transparan 10%
+                        backgroundColor: Color(0x1AFFFFFF),
                       ),
                     ),
                     const Positioned(
@@ -38,7 +38,7 @@ class HomeScreen extends StatelessWidget {
                       left: -30,
                       child: CircleAvatar(
                         radius: 60,
-                        backgroundColor: Color(0x1AFFFFFF), 
+                        backgroundColor: Color(0x1AFFFFFF),
                       ),
                     ),
 
@@ -80,7 +80,7 @@ class HomeScreen extends StatelessWidget {
               ),
             ),
 
-            // Daftar Kelas "Lanjutkan Belajar"
+            // Daftar Kelas "Lanjutkan Belajar" dengan Logo Gambar Asli
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 20.0),
               child: Column(
@@ -96,8 +96,8 @@ class HomeScreen extends StatelessWidget {
                     title: "HTML Dasar",
                     progress: 0.5,
                     progressText: "50% selesai",
-                    themeColor: const Color(0xFFF06529),
-                    bgInitial: "5",
+                    themeColor: const Color(0xFFFF7A22), 
+                    imagePath: 'assets/images/html_logo.png', // 🟧 Path Logo HTML asli kamu
                   ),
                   const SizedBox(height: 15),
 
@@ -105,8 +105,8 @@ class HomeScreen extends StatelessWidget {
                     title: "CSS Styling",
                     progress: 0.5,
                     progressText: "50% selesai",
-                    themeColor: const Color(0xFF2965F1),
-                    bgInitial: "3",
+                    themeColor: const Color(0xFF2196F3), 
+                    imagePath: 'assets/images/css_logo.png',  // 🟦 Path Logo CSS asli kamu
                   ),
                   const SizedBox(height: 15),
 
@@ -114,8 +114,8 @@ class HomeScreen extends StatelessWidget {
                     title: "JavaScript",
                     progress: 0.6,
                     progressText: "60% selesai",
-                    themeColor: const Color(0xFFF7DF1E),
-                    bgInitial: "JS",
+                    themeColor: const Color(0xFFFFB300), 
+                    imagePath: 'assets/images/js_logo.png',   // 🟨 Path Logo JS asli kamu
                   ),
                 ],
               ),
@@ -126,12 +126,13 @@ class HomeScreen extends StatelessWidget {
     );
   }
 
+  // 🛠️ Widget Builder Custom Menggunakan Image.asset untuk Logo Asli
   Widget _buildMenuCard({
     required String title,
     required double progress,
     required String progressText,
     required Color themeColor,
-    required String bgInitial,
+    required String imagePath,
   }) {
     return Container(
       width: double.infinity,
@@ -148,8 +149,9 @@ class HomeScreen extends StatelessWidget {
       ),
       child: Column(
         children: [
+          // Bagian Atas Card: Menampilkan Gambar Logo Asli yang Diperbesar & Diperhalus
           Container(
-            height: 85,
+            height: 120, // Ditinggikan sedikit agar logo besar tidak terlihat sesak
             width: double.infinity,
             decoration: BoxDecoration(
               color: themeColor,
@@ -158,15 +160,25 @@ class HomeScreen extends StatelessWidget {
                 topRight: Radius.circular(20),
               ),
             ),
-            child: Center(
-              child: Text(
-                bgInitial,
-                style: const TextStyle(
-                  color: Color(0x40FFFFFF), // Putih transparan agar inisial terlihat samar 
-                  fontSize: 45, 
-                  fontWeight: FontWeight.bold,
+            child: Stack(
+              alignment: Alignment.center,
+              children: [
+                // Ornamen lingkaran transparan agar logo menyatu alami dengan background
+                Container(
+                  width: 85,
+                  height: 85,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: Colors.white.withValues(alpha: 0.15), // Putih transparan yang sangat halus
+                  ),
                 ),
-              ),
+                // Logo yang sudah diperbesar
+                Image.asset(
+                  imagePath,
+                  height: 70, // Ukuran logo diperbesar
+                  fit: BoxFit.contain,
+                ),
+              ],
             ),
           ),
           Padding(
@@ -181,21 +193,24 @@ class HomeScreen extends StatelessWidget {
                   backgroundColor: Colors.grey[100],
                   color: themeColor,
                   minHeight: 5,
-                  borderRadius: BorderRadius.circular(10), // Membulatkan ujung bar progress
+                  borderRadius: BorderRadius.circular(10),
                 ),
                 const SizedBox(height: 6),
                 Text(progressText, style: TextStyle(fontSize: 12, color: Colors.grey[500])),
                 const SizedBox(height: 12),
                 SizedBox(
                   width: double.infinity,
-                  height: 38,
+                  height: 40,
                   child: OutlinedButton(
                     style: OutlinedButton.styleFrom(
-                      side: const BorderSide(color: Colors.black26),
+                      side: const BorderSide(color: Color(0xFFE2E8F0), width: 1.2),
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                     ),
                     onPressed: () {},
-                    child: const Text("Lanjut Belajar", style: TextStyle(color: Colors.black87, fontSize: 13)),
+                    child: const Text(
+                      "Lanjut Belajar", 
+                      style: TextStyle(color: Color(0xFF334155), fontSize: 13, fontWeight: FontWeight.bold)
+                    ),
                   ),
                 )
               ],
