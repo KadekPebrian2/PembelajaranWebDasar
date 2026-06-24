@@ -1,44 +1,41 @@
 import 'package:flutter/material.dart';
+import '../../core/database_helper.dart';
+import '../../models/weblearn_models.dart';
 
 class EditMateriScreen extends StatefulWidget {
+  final int? kategoriId;
   final String judulKategori; // Contoh: "HTML"
-  const EditMateriScreen({Key? key, required this.judulKategori}) : super(key: key);
+  final Modul? modul;
+  final Konten? konten;
+
+  const EditMateriScreen({
+    Key? key,
+    this.kategoriId,
+    required this.judulKategori,
+    this.modul,
+    this.konten,
+  }) : super(key: key);
 
   @override
   State<EditMateriScreen> createState() => _EditMateriScreenState();
 }
 
 class _EditMateriScreenState extends State<EditMateriScreen> {
-  final TextEditingController _judulController = TextEditingController(text: "Anatomi & Struktur Utama HTML");
-  
-  // Mengisi teks awal sesuai dengan isi materi pada screenshot target
-  final TextEditingController _isiController = TextEditingController(
-    text: "### 3. Susunan Boilerplate Standar HTML5\n\n"
-        "Saat Anda ingin membuat file HTML baru, web browser mewajibkan adanya struktur template standar universal (Boilerplate). Berikut adalah struktur wajib yang harus ditulis di awal pembuatan halaman web:\n\n"
-        "[CODE]\n"
-        "<!DOCTYPE html>\n"
-        "<html lang=\"id\">\n"
-        "<head>\n"
-        "    <meta charset=\"UTF-8\">\n"
-        "    <title>Halaman Web Pertama Saya</title>\n"
-        "</head>\n"
-        "<body>\n"
-        "    <h1>Selamat Datang di WebLearn!</h1>\n"
-        "    <p>Ini adalah paragraf artikel pertama saya.</p>\n"
-        "</body>\n"
-        "</html>\n"
-        "[/CODE]\n\n"
-        "### 4. Bedah Kode Struktur Dokumen\n\n"
-        "• <!DOCTYPE html> : Deklarasi ini berada di baris paling atas untuk memberi tahu browser bahwa dokumen ini menggunakan standar HTML5 versi terbaru.\n\n"
-        "• <html> : Root element atau tag induk utama. Semua kode HTML wajib berada di dalam ruang lingkup tag ini.\n\n"
-        "[NOTE]\n"
-        "Tag pembuka dan penutup adalah satu kesatuan mutlak. Lupa menuliskan tag penutup (seperti </p> atau </body>) sering kali menjadi penyebab utama mengapa tampilan website menjadi berantakan!\n"
-        "[/NOTE]"
-  );
+  late final TextEditingController _judulController;
+  late final TextEditingController _isiController;
+
+  bool get isEdit => widget.modul != null;
 
   // Status simulasi untuk file yang diunggah oleh admin
   String? _namaFileDiupload;
   String? _ukuranFileDiupload;
+
+  @override
+  void initState() {
+    super.initState();
+    _judulController = TextEditingController(text: widget.modul?.judul ?? '');
+    _isiController = TextEditingController(text: widget.konten?.penjelasanMateri ?? '');
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -51,9 +48,9 @@ class _EditMateriScreenState extends State<EditMateriScreen> {
           icon: const Icon(Icons.arrow_back_rounded, color: Color(0xFF1E293B)),
           onPressed: () => Navigator.pop(context),
         ),
-        title: const Text(
-          "Edit Detail Materi",
-          style: TextStyle(color: Color(0xFF1E293B), fontWeight: FontWeight.bold, fontSize: 16),
+        title: Text(
+          isEdit ? "Edit Materi" : "Tambah Materi Baru",
+          style: const TextStyle(color: Color(0xFF1E293B), fontWeight: FontWeight.bold, fontSize: 16),
         ),
         actions: [
           IconButton(
@@ -287,12 +284,67 @@ class _EditMateriScreenState extends State<EditMateriScreen> {
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                       minimumSize: const Size(0, 44),
                     ),
-                    onPressed: () {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text("Perubahan berhasil diterapkan!")),
-                      );
+                    onPressed: () async {
+                      final judul = _judulController.text.trim();
+                      final isi = _isiController.text.trim();
+                      final messenger = ScaffoldMessenger.of(context);
+                      final navigator = Navigator.of(context);
+
+                      if (judul.isEmpty) {
+                        messenger.showSnackBar(
+                          const SnackBar(content: Text('Judul materi tidak boleh kosong.')),
+                        );
+                        return;
+                      }
+
+                      if (isEdit) {
+                        await DatabaseHelper.instance.updateModul(widget.modul!.id!, {
+                          'judul': judul,
+                        });
+
+                        if (widget.konten != null) {
+                          await DatabaseHelper.instance.updateKonten(widget.konten!.id!, {
+                            'penjelasan_materi': isi,
+                            'cuplikan_kode': '',
+                            'penjelasan_kode': '',
+                          });
+
+                          if (!mounted) return;
+                          messenger.showSnackBar(
+                            const SnackBar(content: Text('Perubahan materi berhasil disimpan.')),
+                          );
+                        }
+                      } else {
+                        if (widget.kategoriId == null) {
+                          if (!mounted) return;
+                          messenger.showSnackBar(
+                            const SnackBar(content: Text('Kategori tidak valid.')),
+                          );
+                          return;
+                        }
+
+                        final newModulId = await DatabaseHelper.instance.insertModul({
+                          'kategori_id': widget.kategoriId,
+                          'judul': judul,
+                          'order_index': 0,
+                        });
+                        await DatabaseHelper.instance.insertKonten({
+                          'modul_id': newModulId,
+                          'penjelasan_materi': isi,
+                          'cuplikan_kode': '',
+                          'penjelasan_kode': '',
+                        });
+
+                        if (!mounted) return;
+                        messenger.showSnackBar(
+                          const SnackBar(content: Text('Materi berhasil ditambahkan.')),
+                        );
+                      }
+
+                      if (!mounted) return;
+                      navigator.pop(true);
                     },
-                    child: const Text("Simpan Perubahan", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                    child: Text(isEdit ? "Simpan Perubahan" : "Simpan", style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
                   ),
                 ),
               ],

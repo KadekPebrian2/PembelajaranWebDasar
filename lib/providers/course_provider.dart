@@ -1,34 +1,36 @@
 import 'package:flutter/material.dart';
-import '../core/database_helper.dart';
-import '../models/weblearn_models.dart';
 
 class CourseProvider with ChangeNotifier {
-  List<Kategori> _kategoriList = [];
-  List<Modul> _modulList = [];
-  List<Kategori> get kategoriList => _kategoriList;
-  List<Modul> get modulList => _modulList;
+  final List<Map<String, dynamic>> _daftarPaketQuiz = List.from([
+    {
+      "id": "1", 
+      "nama_kuis": "Kuis 1: Pengenalan Dasar", 
+      "soal_list": List.from([
+        {"soal": "Apa kepanjangan dari HTML?", "a": "Hyper Text Markup Language", "b": "Hyper Link Text", "c": "Home Tool Markup", "d": "Hyper Tech", "jawaban_benar": "a"}
+      ], growable: true)
+    },
+    {
+      "id": "2", 
+      "nama_kuis": "Kuis 2: Struktur & Tag Elemen", 
+      "soal_list": List.from([
+        {"soal": "Tag manakah yang digunakan untuk membuat baris baru?", "a": "<p>", "b": "<br>", "c": "<li>", "d": "<a>", "jawaban_benar": "b"}
+      ], growable: true)
+    },
+  ], growable: true);
 
-  CourseProvider() {
-    fetchKategori();
-  }
+  List<Map<String, dynamic>> get daftarPaketQuiz => _daftarPaketQuiz;
 
-  Future<void> fetchKategori() async {
-    final db = await DatabaseHelper.instance.database;
-    final res = await db.query('kategori');
-    _kategoriList = res.map((c) => Kategori.fromMap(c)).toList();
+  void tambahPaketKuis(String judul, List<Map<String, dynamic>> soal) {
+    _daftarPaketQuiz.add({
+      "id": "${_daftarPaketQuiz.length + 1}",
+      "nama_kuis": judul,
+      "soal_list": List.from(soal, growable: true),
+    });
     notifyListeners();
   }
 
-  Future<void> fetchModulByKategori(int kategoriId) async {
-    final db = await DatabaseHelper.instance.database;
-    final res = await db.query('modul', where: 'kategori_id = ?', whereArgs: [kategoriId], orderBy: 'order_index ASC');
-    _modulList = res.map((m) => Modul.fromMap(m)).toList();
-    notifyListeners();
-  }
-
-  Future<List<Kuis>> fetchKuisByModul(int modulId) async {
-    final db = await DatabaseHelper.instance.database;
-    final res = await db.query('kuis', where: 'modul_id = ?', whereArgs: [modulId]);
-    return res.map((q) => Kuis.fromMap(q)).toList();
+  void updateSoalKuis(int indeksPaket, List<dynamic> soalBaru) {
+    _daftarPaketQuiz[indeksPaket]["soal_list"] = List.from(soalBaru, growable: true);
+    notifyListeners(); 
   }
 }
