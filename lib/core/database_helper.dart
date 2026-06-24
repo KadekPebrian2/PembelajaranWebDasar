@@ -1,5 +1,6 @@
 import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
+import '../models/weblearn_models.dart';
 
 class DatabaseHelper {
   static final DatabaseHelper instance = DatabaseHelper._init();
@@ -150,6 +151,108 @@ class DatabaseHelper {
   }
 
   // ==========================================
+  // ==========================================
+  // FUNGSI CRUD KATEGORI / MODUL / KONTEN / KUIS
+  // ==========================================
+
+  Future<int> insertKategori(Map<String, dynamic> values) async {
+    final db = await instance.database;
+    return await db.insert('kategori', values);
+  }
+
+  Future<List<Kategori>> getKategori() async {
+    final db = await instance.database;
+    final res = await db.query('kategori');
+    return res.map((json) => Kategori.fromMap(json)).toList();
+  }
+
+  Future<int> insertModul(Map<String, dynamic> values) async {
+    final db = await instance.database;
+    return await db.insert('modul', values);
+  }
+
+  Future<List<Modul>> getModulByKategori(int kategoriId) async {
+    final db = await instance.database;
+    final res = await db.query('modul', where: 'kategori_id = ?', whereArgs: [kategoriId], orderBy: 'order_index ASC');
+    return res.map((json) => Modul.fromMap(json)).toList();
+  }
+
+  Future<int> updateModul(int id, Map<String, dynamic> values) async {
+    final db = await instance.database;
+    return await db.update('modul', values, where: 'id = ?', whereArgs: [id]);
+  }
+
+  Future<int> deleteModul(int id) async {
+    final db = await instance.database;
+    return await db.delete('modul', where: 'id = ?', whereArgs: [id]);
+  }
+
+  Future<int> insertKonten(Map<String, dynamic> values) async {
+    final db = await instance.database;
+    return await db.insert('konten', values);
+  }
+
+  Future<int> updateKonten(int id, Map<String, dynamic> values) async {
+    final db = await instance.database;
+    return await db.update('konten', values, where: 'id = ?', whereArgs: [id]);
+  }
+
+  Future<int> deleteKonten(int id) async {
+    final db = await instance.database;
+    return await db.delete('konten', where: 'id = ?', whereArgs: [id]);
+  }
+
+  Future<int> insertKuis(Map<String, dynamic> values) async {
+    final db = await instance.database;
+    return await db.insert('kuis', values);
+  }
+
+  Future<List<Kuis>> getKuisByModul(int modulId) async {
+    final db = await instance.database;
+    final res = await db.query('kuis', where: 'modul_id = ?', whereArgs: [modulId]);
+    return res.map((json) => Kuis.fromMap(json)).toList();
+  }
+
+  Future<Kategori?> getKategoriByName(String name) async {
+    final db = await instance.database;
+    final result = await db.query('kategori', where: 'nama = ?', whereArgs: [name]);
+    if (result.isNotEmpty) return Kategori.fromMap(result.first);
+    return null;
+  }
+
+  Future<Konten?> getKontenByModul(int modulId) async {
+    final db = await instance.database;
+    final result = await db.query('konten', where: 'modul_id = ?', whereArgs: [modulId]);
+    if (result.isNotEmpty) return Konten.fromMap(result.first);
+    return null;
+  }
+
+  Future<int> deleteKuisByModul(int modulId) async {
+    final db = await instance.database;
+    return await db.delete('kuis', where: 'modul_id = ?', whereArgs: [modulId]);
+  }
+
+  Future<int> deleteKontenByModul(int modulId) async {
+    final db = await instance.database;
+    return await db.delete('konten', where: 'modul_id = ?', whereArgs: [modulId]);
+  }
+
+  Future<int> getModulCountByKategori(int kategoriId) async {
+    final db = await instance.database;
+    final result = await db.rawQuery('SELECT COUNT(*) AS count FROM modul WHERE kategori_id = ?', [kategoriId]);
+    return Sqflite.firstIntValue(result) ?? 0;
+  }
+
+  Future<int> updateKuis(int id, Map<String, dynamic> values) async {
+    final db = await instance.database;
+    return await db.update('kuis', values, where: 'id = ?', whereArgs: [id]);
+  }
+
+  Future<int> deleteKuis(int id) async {
+    final db = await instance.database;
+    return await db.delete('kuis', where: 'id = ?', whereArgs: [id]);
+  }
+
   // FUNGSI AUTHENTICATION (LOGIN & REGISTER)
   // ==========================================
 

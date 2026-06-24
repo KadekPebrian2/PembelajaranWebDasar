@@ -3,9 +3,7 @@ import 'package:provider/provider.dart';
 import '../../providers/auth_provider.dart';
 import '../auth/login_screen.dart';
 
-// Import file manajemen & form edit
-import 'edit_materi_screen.dart';
-import 'edit_quiz_screen.dart';
+// Import file manajemen
 import 'manage_materi_screen.dart';
 import 'manage_quiz_screen.dart';
 
@@ -299,11 +297,13 @@ class _AdminDashboardState extends State<AdminDashboard> {
                 borderColor: const Color(0xFFFF7A22),
                 title: "Dasar-Dasar HTML",
                 subtitle: "Kuasai komponen struktural web",
-                onEditKuis: () {
-                  Navigator.push(context, MaterialPageRoute(builder: (_) => const ManageQuizScreen(judulKategori: "HTML")));
-                },
-                onEditMateri: () {
-                  Navigator.push(context, MaterialPageRoute(builder: (_) => const ManageMateriScreen(judulKategori: "HTML")));
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => const CategoryDetailScreen(kategoriId: 1, judulKategori: "HTML"),
+                    ),
+                  );
                 },
               ),
               const SizedBox(height: 16),
@@ -316,11 +316,13 @@ class _AdminDashboardState extends State<AdminDashboard> {
                 borderColor: const Color(0xFF2196F3),
                 title: "Dasar-Dasar CSS",
                 subtitle: "Kuasai gaya komponen visual web",
-                onEditKuis: () {
-                  Navigator.push(context, MaterialPageRoute(builder: (_) => const ManageQuizScreen(judulKategori: "CSS")));
-                },
-                onEditMateri: () {
-                  Navigator.push(context, MaterialPageRoute(builder: (_) => const ManageMateriScreen(judulKategori: "CSS")));
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => const CategoryDetailScreen(kategoriId: 2, judulKategori: "CSS"),
+                    ),
+                  );
                 },
               ),
               const SizedBox(height: 16),
@@ -333,11 +335,13 @@ class _AdminDashboardState extends State<AdminDashboard> {
                 borderColor: const Color(0xFFFFB300),
                 title: "Dasar-Dasar JavaScript",
                 subtitle: "Kuasai logika manipulasi web",
-                onEditKuis: () {
-                  Navigator.push(context, MaterialPageRoute(builder: (_) => const ManageQuizScreen(judulKategori: "JavaScript")));
-                },
-                onEditMateri: () {
-                  Navigator.push(context, MaterialPageRoute(builder: (_) => const ManageMateriScreen(judulKategori: "JavaScript")));
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => const CategoryDetailScreen(kategoriId: 3, judulKategori: "JavaScript"),
+                    ),
+                  );
                 },
               ),
               const SizedBox(height: 24),
@@ -356,106 +360,95 @@ class _AdminDashboardState extends State<AdminDashboard> {
     required Color borderColor,
     required String title,
     required String subtitle,
-    required VoidCallback onEditKuis,
-    required VoidCallback onEditMateri,
+    required VoidCallback onTap,
   }) {
-    return Container(
-      width: double.infinity,
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.03),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Container(
-            height: 4,
-            decoration: BoxDecoration(
-              color: borderColor,
-              borderRadius: const BorderRadius.only(
-                topLeft: Radius.circular(16),
-                topRight: Radius.circular(16),
+    return InkWell(
+      borderRadius: BorderRadius.circular(16),
+      onTap: onTap,
+      child: Container(
+        width: double.infinity,
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.03),
+              blurRadius: 10,
+              offset: const Offset(0, 4),
+            ),
+          ],
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Container(
+              height: 4,
+              decoration: BoxDecoration(
+                color: borderColor,
+                borderRadius: const BorderRadius.only(
+                  topLeft: Radius.circular(16),
+                  topRight: Radius.circular(16),
+                ),
               ),
             ),
-          ),
-          Padding(
-            padding: const EdgeInsets.all(20.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                      decoration: BoxDecoration(
-                        color: badgeBg,
-                        borderRadius: BorderRadius.circular(8),
+            Padding(
+              padding: const EdgeInsets.all(20.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                        decoration: BoxDecoration(
+                          color: badgeBg,
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Text(
+                          kategoriBadge,
+                          style: TextStyle(color: badgeText, fontWeight: FontWeight.bold, fontSize: 12),
+                        ),
                       ),
-                      child: Text(
-                        kategoriBadge,
-                        style: TextStyle(color: badgeText, fontWeight: FontWeight.bold, fontSize: 12),
+                      Image.asset(
+                        imageAssetPath,
+                        width: 28,
+                        height: 28,
+                        errorBuilder: (context, error, stackTrace) {
+                          return Icon(Icons.code_rounded, color: badgeText, size: 24);
+                        },
                       ),
-                    ),
-                    Image.asset(
-                      imageAssetPath,
-                      width: 28,
-                      height: 28,
-                      errorBuilder: (context, error, stackTrace) {
-                        return Icon(Icons.code_rounded, color: badgeText, size: 24);
-                      },
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 14),
-                Text(
-                  title,
-                  style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Color(0xFF1E293B)),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  subtitle,
-                  style: const TextStyle(fontSize: 13, color: Color(0xFF64748B)),
-                ),
-                const SizedBox(height: 16),
-                Container(height: 1, color: const Color(0xFFF1F5F9)),
-                const SizedBox(height: 14),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.end,
-                  children: [
-                    _buildOutlinedActionButton(label: "Edit Kuis", onTap: onEditKuis),
-                    const SizedBox(width: 10),
-                    _buildOutlinedActionButton(label: "Edit Materi", onTap: onEditMateri),
-                  ],
-                )
-              ],
+                    ],
+                  ),
+                  const SizedBox(height: 14),
+                  Text(
+                    title,
+                    style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Color(0xFF1E293B)),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    subtitle,
+                    style: const TextStyle(fontSize: 13, color: Color(0xFF64748B)),
+                  ),
+                  const SizedBox(height: 16),
+                  Container(height: 1, color: const Color(0xFFF1F5F9)),
+                  const SizedBox(height: 14),
+                  Row(
+                    children: [
+                      Icon(Icons.arrow_forward_ios_rounded, color: const Color(0xFF6B11D6), size: 14),
+                      const SizedBox(width: 8),
+                      const Expanded(
+                        child: Text(
+                          "Ketuk untuk membuka edit materi dan kuis",
+                          style: TextStyle(fontSize: 13, color: Color(0xFF64748B)),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
             ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildOutlinedActionButton({required String label, required VoidCallback onTap}) {
-    return SizedBox(
-      height: 34,
-      child: OutlinedButton(
-        style: OutlinedButton.styleFrom(
-          side: const BorderSide(color: Color(0xFF9033FF), width: 1.5),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-          padding: const EdgeInsets.symmetric(horizontal: 14),
-        ),
-        onPressed: onTap,
-        child: Text(
-          label,
-          style: const TextStyle(color: Color(0xFF9033FF), fontWeight: FontWeight.bold, fontSize: 12),
+          ],
         ),
       ),
     );
@@ -484,6 +477,147 @@ class _AdminDashboardState extends State<AdminDashboard> {
             onTap: _handleLogout,
           ),
         ],
+      ),
+    );
+  }
+}
+
+class CategoryDetailScreen extends StatelessWidget {
+  final int kategoriId;
+  final String judulKategori;
+
+  const CategoryDetailScreen({Key? key, required this.kategoriId, required this.judulKategori}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: const Color(0xFFF8F9FA),
+      appBar: AppBar(
+        title: Text(
+          "Detail $judulKategori",
+          style: const TextStyle(color: Color(0xFF1E293B), fontWeight: FontWeight.bold, fontSize: 18),
+        ),
+        backgroundColor: Colors.white,
+        foregroundColor: const Color(0xFF1E293B),
+        elevation: 0,
+      ),
+      body: SafeArea(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(24.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(20.0),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF9033FF),
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      "Edit Materi & Kuis",
+                      style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      "Di dalam $judulKategori, Anda bisa mengelola materi dan kuis tanpa kembali ke tampilan utama.",
+                      style: const TextStyle(color: Colors.white70, fontSize: 13, height: 1.4),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 20),
+              _buildActionCard(
+                context,
+                title: "Kelola Materi $judulKategori",
+                subtitle: "Buka daftar materi yang bisa ditambah atau diedit",
+                icon: Icons.book_rounded,
+                color: const Color(0xFF6B11D6),
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (_) => ManageMateriScreen(judulKategori: judulKategori)),
+                  );
+                },
+              ),
+              const SizedBox(height: 16),
+              _buildActionCard(
+                context,
+                title: "Kelola Kuis $judulKategori",
+                subtitle: "Buka paket kuis dan sunting soal langsung di dalam kategori",
+                icon: Icons.quiz_rounded,
+                color: const Color(0xFFFFB300),
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (_) => ManageQuizScreen(judulKategori: judulKategori)),
+                  );
+                },
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildActionCard(BuildContext context,
+      {required String title,
+      required String subtitle,
+      required IconData icon,
+      required Color color,
+      required VoidCallback onTap}) {
+    return InkWell(
+      borderRadius: BorderRadius.circular(18),
+      onTap: onTap,
+      child: Container(
+        width: double.infinity,
+        padding: const EdgeInsets.all(18),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(18),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.04),
+              blurRadius: 12,
+              offset: const Offset(0, 4),
+            ),
+          ],
+        ),
+        child: Row(
+          children: [
+            Container(
+              width: 48,
+              height: 48,
+              decoration: BoxDecoration(
+                color: color.withOpacity(0.15),
+                borderRadius: BorderRadius.circular(14),
+              ),
+              child: Icon(icon, color: color, size: 26),
+            ),
+            const SizedBox(width: 16),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    style: const TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: Color(0xFF1E293B)),
+                  ),
+                  const SizedBox(height: 6),
+                  Text(
+                    subtitle,
+                    style: const TextStyle(fontSize: 13, color: Color(0xFF64748B), height: 1.4),
+                  ),
+                ],
+              ),
+            ),
+            const Icon(Icons.arrow_forward_ios_rounded, size: 16, color: Color(0xFF64748B)),
+          ],
+        ),
       ),
     );
   }
