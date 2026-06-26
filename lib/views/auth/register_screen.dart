@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart'; // <-- Tambahkan import ini
 import '../../core/theme.dart';
-import '../../core/database_helper.dart'; // Sesuaikan lokasi file DatabaseHelper Anda
+import '../../providers/auth_provider.dart'; // <-- Tambahkan import ini
 import 'login_screen.dart';
 
 class RegisterScreen extends StatefulWidget {
+  const RegisterScreen({Key? key}) : super(key: key); // Ditambahkan const constructor agar rapi
+
   @override
   _RegisterScreenState createState() => _RegisterScreenState();
 }
@@ -13,6 +16,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
   final _emailCtrl = TextEditingController();
   final _passCtrl = TextEditingController();
   final _confirmPassCtrl = TextEditingController();
+  bool _isLoading = false; // Efek loading saat proses daftar berlangsung
 
   @override
   void dispose() {
@@ -90,7 +94,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                         shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(15)),
                       ),
-                      onPressed: () async {
+                      onPressed: _isLoading ? null : () async {
                         String nama = _namaCtrl.text.trim();
                         String email = _emailCtrl.text.trim();
                         String password = _passCtrl.text.trim();
@@ -106,7 +110,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                           return;
                         }
 
-                        // 2. Validasi Format Email Publik (Gmail, Yahoo, Outlook)
+                        // 2. Validasi Format Email Publik
                         final emailRegex = RegExp(
                             r'^[\w-\.]+@(gmail\.com|yahoo\.com|yahoo\.co\.id|outlook\.com|hotmail\.com)$',
                             caseSensitive: false);
@@ -121,7 +125,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                           return;
                         }
 
-                        // 3. BARU: Validasi Panjang Minimal Password (Minimal 6 Karakter)
+                        // 3. Validasi Panjang Minimal Password
                         if (password.length < 6) {
                           ScaffoldMessenger.of(context).showSnackBar(
                             const SnackBar(
@@ -130,7 +134,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                               backgroundColor: Colors.orange,
                             ),
                           );
-                          return; // Menghentikan proses jika kurang dari 6 karakter
+                          return;
                         }
 
                         // 4. Validasi Konfirmasi Password
@@ -143,40 +147,70 @@ class _RegisterScreenState extends State<RegisterScreen> {
                           return;
                         }
 
-                        // Simpan ke SQLite Database
+                        // Nyalakan efek loading spinner
+                        setState(() {
+                          _isLoading = true;
+                        });
+
+                        // AKSI BARU: Daftarkan langsung ke Server Firebase Auth lewat Provider
                         try {
-                          await DatabaseHelper.instance
-                              .registerUser(nama, email, password);
+                          final authProvider = Provider.of<AuthProvider>(context, listen: false);
+                          bool isSuccess = await authProvider.registerWithFirebase(email, password);
+
+                          // Matikan efek loading spinner
+                          setState(() {
+                            _isLoading = false;
+                          });
 
                           if (!mounted) return;
 
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                                content: Text(
-                                    "Pendaftaran Berhasil! Silakan Login."),
-                                backgroundColor: Colors.green),
-                          );
+                          if (isSuccess) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                  content: Text(
+                                      "Pendaftaran Berhasil! Silakan Login."),
+                                  backgroundColor: Colors.green),
+                            );
 
-                          // Arahkan kembali ke halaman Login
-                          Navigator.pushReplacement(
-                              context,
-                              MaterialPageRoute(
-                                  builder: (_) => const LoginScreen()));
+                            // Arahkan kembali ke halaman Login
+                            Navigator.pushReplacement(
+                                context,
+                                MaterialPageRoute(
+                                    builder: (_) => const LoginScreen()));
+                          } else {
+                            // Gagal mendaftar dari sisi Firebase (biasanya karena email duplikat)
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                  content: Text(
+                                      "Email sudah terdaftar atau format salah! Gunakan email lain."),
+                                  backgroundColor: Colors.red),
+                            );
+                          }
                         } catch (e) {
-                          // Jika email sudah ada di SQLite
+                          setState(() {
+                            _isLoading = false;
+                          });
                           ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                                content: Text(
-                                    "Email sudah terdaftar! Gunakan email lain."),
+                            SnackBar(
+                                content: Text("Terjadi kesalahan sistem: $e"),
                                 backgroundColor: Colors.red),
                           );
                         }
                       },
-                      child: const Text("Daftar",
-                          style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold)),
+                      child: _isLoading
+                          ? const SizedBox(
+                              width: 24,
+                              height: 24,
+                              child: CircularProgressIndicator(
+                                color: Colors.white,
+                                strokeWidth: 2,
+                              ),
+                            )
+                          : const Text("Daftar",
+                              style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.bold)),
                     ),
                   ),
                   const SizedBox(height: 15),
@@ -188,7 +222,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       const Text("Sudah punya akun? "),
                       GestureDetector(
                         onTap: () {
-                          // Arahkan kembali ke halaman Login
                           Navigator.pushReplacement(
                               context,
                               MaterialPageRoute(

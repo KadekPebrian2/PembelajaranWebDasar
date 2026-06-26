@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "336645454105",
+    "project_id": "weblearn-9f82a",
+    "storage_bucket": "weblearn-9f82a.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:336645454105:android:ebadfcbf1fd2f6a6b3ed88",
+        "android_client_info": {
+          "package_name": "com.example.weblearn"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBTdtM6kEU0-QPixin8I6QsNAr7YKjUAN8"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

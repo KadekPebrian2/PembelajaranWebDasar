@@ -11,12 +11,13 @@ class ProfileScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     const primaryPurple = Color(0xFF8200E6);
 
-    // 1. Ambil data user yang sedang aktif dari Provider
+    // 1. Ambil data user yang sedang aktif dari Provider (Sekarang bertipe User?)
     final userData = Provider.of<AuthProvider>(context).currentUser;
 
-    // 2. Jika userData null (untuk jaga-jaga), set nilai default
-    final namaLengkap = userData?['nama'] ?? 'User Guest';
-    final emailUser = userData?['email'] ?? 'Belum ada email';
+    // 2. PERBAIKAN: Menggunakan properti objek 'User' Firebase, bukan sintaks Map []
+    // Jika displayName bawaan Firebase null, kita ambil potongan email sebelum tanda '@' sebagai nama sementara.
+    final namaLengkap = userData?.displayName ?? (userData?.email?.split('@')[0] ?? 'User Guest');
+    final emailUser = userData?.email ?? 'Belum ada email';
 
     return Scaffold(
       backgroundColor: const Color(0xFFF8F9FA), // Warna background abu-abu kebiruan sangat terang
@@ -37,7 +38,7 @@ class ProfileScreen extends StatelessWidget {
               ),
               const SizedBox(height: 20),
 
-              // Card Profil (Sesuai Desain Anda)
+              // Card Profil
               Container(
                 width: double.infinity,
                 padding: const EdgeInsets.symmetric(vertical: 30),
@@ -62,7 +63,7 @@ class ProfileScreen extends StatelessWidget {
                     ),
                     const SizedBox(height: 15),
                     
-                    // Nama Dinamis (Otomatis dari Database)
+                    // Nama Dinamis (Otomatis dari Firebase)
                     Text(
                       namaLengkap,
                       style: const TextStyle(
@@ -72,7 +73,7 @@ class ProfileScreen extends StatelessWidget {
                     ),
                     const SizedBox(height: 5),
                     
-                    // Email Dinamis (Otomatis dari Database)
+                    // Email Dinamis (Otomatis dari Firebase)
                     Text(
                       emailUser,
                       style: const TextStyle(
@@ -86,12 +87,10 @@ class ProfileScreen extends StatelessWidget {
               const SizedBox(height: 30),
 
               // Tombol Menu Pengaturan
-              // Tombol Menu Pengaturan
               _buildMenuButton(
                 icon: Icons.settings,
                 title: "Pengaturan",
                 onTap: () {
-                  // Arahkan ke halaman pengaturan
                   Navigator.push(
                     context,
                     MaterialPageRoute(builder: (_) => const SettingsScreen()),
@@ -100,12 +99,12 @@ class ProfileScreen extends StatelessWidget {
               ),
               const SizedBox(height: 15),
 
-              // Tombol Menu Logout
+              // Tombol Menu Logout (Sudah sinkron dengan Firebase)
               _buildMenuButton(
                 icon: Icons.logout,
                 title: "Logout",
                 onTap: () {
-                  // Proses hapus sesi dan kembali ke halaman Login
+                  // Proses hapus sesi Firebase dan kembali ke halaman Login bersih
                   Provider.of<AuthProvider>(context, listen: false).logout();
                   Navigator.pushAndRemoveUntil(
                     context, 
@@ -121,7 +120,7 @@ class ProfileScreen extends StatelessWidget {
     );
   }
 
-  // Widget bantuan untuk membuat tombol menu yang seragam sesuai desain
+  // Widget bantuan untuk membuat tombol menu yang seragam
   Widget _buildMenuButton({required IconData icon, required String title, required VoidCallback onTap}) {
     return InkWell(
       onTap: onTap,

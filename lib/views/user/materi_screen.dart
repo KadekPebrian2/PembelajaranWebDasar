@@ -1,8 +1,5 @@
 import 'package:flutter/material.dart';
-// PERBAIKAN IMPORT: Ditambahkan '../' karena file ini berada di dalam folder 'user'
-import '../materi/html_materi_screen.dart';
-import '../materi/css_materi_screen.dart';
-import '../materi/js_materi_screen.dart';
+import '../materi/materi_detail_screen.dart'; // Mengarah ke single screen dinamis kita
 
 class MateriScreen extends StatelessWidget {
   const MateriScreen({Key? key}) : super(key: key);
@@ -27,7 +24,7 @@ class MateriScreen extends StatelessWidget {
               ),
               const SizedBox(height: 25),
 
-              // 1. HTML Card dengan Logo Gambar
+              // 1. HTML Card -> Mengarah langsung ke MateriDetailScreen
               _buildMenuMateri(
                 context: context,
                 imagePath: 'assets/images/html_logo.png',
@@ -37,13 +34,18 @@ class MateriScreen extends StatelessWidget {
                 onTap: () {
                   Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (_) => const HtmlMateriScreen()),
+                    MaterialPageRoute(
+                      builder: (_) => const MateriDetailScreen(
+                        kategori: "HTML",
+                        temaColor: Color(0xFFFF7A22), // Warna tema HTML (Oranye)
+                      ),
+                    ),
                   );
                 },
               ),
               const SizedBox(height: 16),
 
-              // 2. CSS Card dengan Logo Gambar
+              // 2. CSS Card -> Mengarah langsung ke MateriDetailScreen
               _buildMenuMateri(
                 context: context,
                 imagePath: 'assets/images/css_logo.png',
@@ -53,13 +55,18 @@ class MateriScreen extends StatelessWidget {
                 onTap: () {
                   Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (_) => const CssMateriScreen()),
+                    MaterialPageRoute(
+                      builder: (_) => const MateriDetailScreen(
+                        kategori: "CSS",
+                        temaColor: Color(0xFF2196F3), // Warna tema CSS (Biru)
+                      ),
+                    ),
                   );
                 },
               ),
               const SizedBox(height: 16),
 
-              // 3. JavaScript Card dengan Logo Gambar
+              // 3. JavaScript Card -> Mengarah langsung ke MateriDetailScreen
               _buildMenuMateri(
                 context: context,
                 imagePath: 'assets/images/js_logo.png',
@@ -69,7 +76,12 @@ class MateriScreen extends StatelessWidget {
                 onTap: () {
                   Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (_) => const JsMateriScreen()),
+                    MaterialPageRoute(
+                      builder: (_) => const MateriDetailScreen(
+                        kategori: "JS",
+                        temaColor: Color(0xFFFFB300), // Warna tema JS (Kuning/Emas)
+                      ),
+                    ),
                   );
                 },
               ),
@@ -95,7 +107,7 @@ class MateriScreen extends StatelessWidget {
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.05), // PERBAIKAN: Menggunakan .withValues
+            color: Colors.black.withValues(alpha: 0.05),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),

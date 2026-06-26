@@ -1,19 +1,16 @@
 import 'package:flutter/material.dart';
-import '../../core/database_helper.dart';
-import '../../models/weblearn_models.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 class EditMateriScreen extends StatefulWidget {
-  final int? kategoriId;
-  final String judulKategori; // Contoh: "HTML"
-  final Modul? modul;
-  final Konten? konten;
+  final String category;
+  final Map<String, dynamic>? materiData;
+  final int? index;
 
   const EditMateriScreen({
     Key? key,
-    this.kategoriId,
-    required this.judulKategori,
-    this.modul,
-    this.konten,
+    required this.category,
+    this.materiData,
+    this.index,
   }) : super(key: key);
 
   @override
@@ -21,356 +18,265 @@ class EditMateriScreen extends StatefulWidget {
 }
 
 class _EditMateriScreenState extends State<EditMateriScreen> {
-  late final TextEditingController _judulController;
-  late final TextEditingController _isiController;
-
-  bool get isEdit => widget.modul != null;
-
-  // Status simulasi untuk file yang diunggah oleh admin
-  String? _namaFileDiupload;
-  String? _ukuranFileDiupload;
+  final _formKey = GlobalKey<FormState>();
+  late TextEditingController _judulController;
+  late TextEditingController _isiController;
+  bool _isLoading = false;
 
   @override
   void initState() {
     super.initState();
-    _judulController = TextEditingController(text: widget.modul?.judul ?? '');
-    _isiController = TextEditingController(text: widget.konten?.penjelasanMateri ?? '');
+    _judulController = TextEditingController(text: widget.materiData?['judul_bab'] ?? '');
+    _isiController = TextEditingController(text: widget.materiData?['isi_materi'] ?? '');
+  }
+
+  @override
+  void dispose() {
+    _judulController.dispose();
+    _isiController.dispose();
+    super.dispose();
+  }
+
+  void _saveMateri() async {
+    if (!_formKey.currentState!.validate()) return;
+    setState(() => _isLoading = true);
+
+    final mapMateri = {
+      'judul_bab': _judulController.text.trim(),
+      'isi_materi': _isiController.text.trim(),
+    };
+
+    try {
+      final docRef = FirebaseFirestore.instance.collection('courses').doc(widget.category);
+
+      if (widget.materiData == null) {
+        await docRef.set({
+          'kategori': widget.category,
+          'daftar_bab': FieldValue.arrayUnion([mapMateri])
+        }, SetOptions(merge: true));
+      } else {
+        final docSnap = await docRef.get();
+        if (docSnap.exists) {
+          List<dynamic> listBabTemp = List.from(docSnap.data()?['daftar_bab'] ?? []);
+          listBabTemp[widget.index!] = mapMateri;
+          await docRef.update({'daftar_bab': listBabTemp});
+        }
+      }
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Materi sukses disimpan!')));
+        Navigator.pop(context);
+      }
+    } catch (e) {
+      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Gagal menyimpan materi: $e')));
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
+    }
   }
 
   @override
   Widget build(BuildContext context) {
+    bool isEdit = widget.materiData != null;
     return Scaffold(
-      backgroundColor: const Color(0xFFF8F9FA),
+      backgroundColor: Colors.white,
       appBar: AppBar(
+        title: Text(isEdit ? 'Edit Materi' : 'Tambah Materi Baru', style: const TextStyle(fontWeight: FontWeight.bold, color: Color(0xFF1E293B), fontSize: 18)),
         backgroundColor: Colors.white,
-        elevation: 0.5,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back_rounded, color: Color(0xFF1E293B)),
-          onPressed: () => Navigator.pop(context),
-        ),
-        title: Text(
-          isEdit ? "Edit Materi" : "Tambah Materi Baru",
-          style: const TextStyle(color: Color(0xFF1E293B), fontWeight: FontWeight.bold, fontSize: 16),
-        ),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.save_as_rounded, color: Color(0xFF6B11D6)),
-            onPressed: () {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text("Perubahan materi berhasil disimpan ke Database!")),
-              );
-            },
-          ),
-          const SizedBox(width: 8),
-        ],
+        elevation: 0,
+        iconTheme: const IconThemeData(color: Color(0xFF1E293B)),
+        centerTitle: false,
       ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(20.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Banner Oranye Header Modul
-            Container(
-              width: double.infinity,
-              padding: const EdgeInsets.all(20),
-              decoration: BoxDecoration(
-                color: const Color(0xFFFF7A22), 
-                borderRadius: BorderRadius.circular(16),
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    "Modul: Pemrograman Dasar",
-                    style: TextStyle(color: Colors.white.withAlpha(230), fontSize: 12, fontWeight: FontWeight.w500),
-                  ),
-                  const SizedBox(height: 6),
-                  Text(
-                    widget.judulKategori,
-                    style: const TextStyle(color: Colors.white, fontSize: 22, fontWeight: FontWeight.bold),
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    "Modul ini membahas tentang struktur dasar dokumen web menggunakan bahasa markup ${widget.judulKategori} terbaru.",
-                    style: TextStyle(color: Colors.white.withAlpha(216), fontSize: 12, height: 1.4),
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(height: 20),
-
-            // Input Judul Materi
-            const Text("Judul Materi", style: TextStyle(fontWeight: FontWeight.bold, color: Color(0xFF334155), fontSize: 13)),
-            const SizedBox(height: 6),
-            Container(
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(10),
-                border: Border.all(color: const Color(0xFFE2E8F0)),
-              ),
-              child: TextField(
-                controller: _judulController,
-                decoration: const InputDecoration(
-                  border: InputBorder.none,
-                  contentPadding: EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-                ),
-                style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Color(0xFF1E293B)),
-              ),
-            ),
-            const SizedBox(height: 20),
-
-            // KOTAK INFORMASI / PANDUAN STRUKTUR TEKS UNTUK ADMIN
-            Container(
-              padding: const EdgeInsets.all(12),
-              margin: const EdgeInsets.only(bottom: 12), // <-- Sudah Diperbaiki ke EdgeInsets.only
-              decoration: BoxDecoration(
-                color: const Color(0xFFEFF6FF),
-                borderRadius: BorderRadius.circular(10),
-                border: Border.all(color: const Color(0xFFBFDBFE)),
-              ),
-              child: const Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: [
-                      Icon(Icons.info_outline_rounded, color: Color(0xFF1D4ED8), size: 16),
-                      SizedBox(width: 6),
-                      Text("Panduan Kode Format Teks:", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12, color: Color(0xFF1D4ED8))),
-                    ],
-                  ),
-                  SizedBox(height: 6),
-                  Text("• Gunakan ### [Judul] untuk Sub-Judul (Warna Oranye)", style: TextStyle(fontSize: 11, color: Color(0xFF1E40AF))),
-                  Text("• Bungkus kode dengan [CODE] ... [/CODE] untuk Blok Boilerplate", style: TextStyle(fontSize: 11, color: Color(0xFF1E40AF))),
-                  Text("• Bungkus dengan [NOTE] ... [/NOTE] untuk Kotak Peringatan Bohlam", style: TextStyle(fontSize: 11, color: Color(0xFF1E40AF))),
-                ],
-              ),
-            ),
-
-            // Toolbar Editor (Simulasi Aksi Sisipan Tag)
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-              decoration: const BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.only(topLeft: Radius.circular(12), topRight: Radius.circular(12)),
-              ),
-              child: Row(
-                children: [
-                  _buildToolbarIcon(Icons.format_bold_rounded),
-                  _buildToolbarIcon(Icons.format_italic_rounded),
-                  _buildToolbarIcon(Icons.format_underlined_rounded),
-                  const SizedBox(width: 8),
-                  IconButton(
-                    icon: const Icon(Icons.title_rounded, color: Color(0xFFFF7A22), size: 20),
-                    onPressed: () => _insertTextTags("### ", ""),
-                    tooltip: "Sub Judul",
-                  ),
-                  IconButton(
-                    icon: const Icon(Icons.code_rounded, color: Color(0xFF64748B), size: 20),
-                    onPressed: () => _insertTextTags("[CODE]\n", "\n[/CODE]"),
-                    tooltip: "Blok Kode",
-                  ),
-                  IconButton(
-                    icon: const Icon(Icons.lightbulb_outline_rounded, color: Colors.amber, size: 20),
-                    onPressed: () => _insertTextTags("[NOTE]\n", "\n[/NOTE]"),
-                    tooltip: "Kotak Peringatan",
-                  ),
-                ],
-              ),
-            ),
-            
-            // Text Area Isi Materi
-            Container(
-              constraints: const BoxConstraints(minHeight: 280), 
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: const BorderRadius.only(bottomLeft: Radius.circular(12), bottomRight: Radius.circular(12)),
-                border: Border.all(color: const Color(0xFFF1F5F9)),
-              ),
-              child: TextField(
-                controller: _isiController,
-                maxLines: null,
-                keyboardType: TextInputType.multiline,
-                decoration: const InputDecoration(
-                  border: InputBorder.none,
-                  contentPadding: EdgeInsets.all(16),
-                  hintText: "Ketik isi materi di sini...",
-                ),
-                style: const TextStyle(fontSize: 13, height: 1.5, color: Color(0xFF334155)),
-              ),
-            ),
-            const SizedBox(height: 20),
-
-            // Bagian Lampiran/Media
-            const Text("Lampiran/Media", style: TextStyle(fontWeight: FontWeight.bold, color: Color(0xFF334155), fontSize: 13)),
-            const SizedBox(height: 8),
-            Container(
-              width: double.infinity,
-              padding: const EdgeInsets.all(20),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: const Color(0xFFE2E8F0)),
-              ),
+      body: _isLoading
+          ? const Center(child: CircularProgressIndicator(color: Color(0xFF6B11D6)))
+          : SafeArea(
               child: Column(
                 children: [
-                  if (_namaFileDiupload == null) ...[
-                    const Icon(Icons.cloud_upload_outlined, color: Color(0xFF64748B), size: 32),
-                    const SizedBox(height: 8),
-                    OutlinedButton.icon(
-                      style: OutlinedButton.styleFrom(
-                        side: const BorderSide(color: Color(0xFFE2E8F0)),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                  Expanded(
+                    child: SingleChildScrollView(
+                      padding: const EdgeInsets.all(20.0),
+                      child: Form(
+                        key: _formKey,
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            // Header Banner (Oranye)
+                            if (!isEdit)
+                              Container(
+                                width: double.infinity,
+                                padding: const EdgeInsets.all(20),
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFFFF7A22),
+                                  borderRadius: BorderRadius.circular(16),
+                                ),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    const Text("Modul: Pemrograman Dasar", style: TextStyle(color: Colors.white70, fontSize: 12)),
+                                    const SizedBox(height: 4),
+                                    Text(widget.category, style: const TextStyle(color: Colors.white, fontSize: 24, fontWeight: FontWeight.bold)),
+                                    const SizedBox(height: 8),
+                                    const Text("Modul ini membahas tentang struktur dasar dokumen web menggunakan bahasa markup terbaru.", style: TextStyle(color: Colors.white, fontSize: 13)),
+                                  ],
+                                ),
+                              ),
+                            if (!isEdit) const SizedBox(height: 20),
+                            
+                            const Text("Judul Materi", style: TextStyle(fontWeight: FontWeight.bold, color: Color(0xFF334155))),
+                            const SizedBox(height: 8),
+                            TextFormField(
+                              controller: _judulController,
+                              decoration: InputDecoration(
+                                hintText: 'Contoh: 1. Pengenalan HTML',
+                                border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: Color(0xFFE2E8F0))),
+                                enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: Color(0xFFE2E8F0))),
+                                filled: true,
+                                fillColor: Colors.white,
+                              ),
+                              validator: (v) => v!.isEmpty ? 'Judul tidak boleh kosong' : null,
+                            ),
+                            const SizedBox(height: 20),
+
+                            // Info Box Panduan Format (Biru)
+                            Container(
+                              padding: const EdgeInsets.all(16),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFFF0F5FF),
+                                borderRadius: BorderRadius.circular(12),
+                                border: Border.all(color: const Color(0xFFD6E4FF)),
+                              ),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Row(
+                                    children: const [
+                                      Icon(Icons.info_outline_rounded, size: 18, color: Color(0xFF2563EB)),
+                                      SizedBox(width: 8),
+                                      Text("Panduan Kode Format Teks:", style: TextStyle(fontWeight: FontWeight.bold, color: Color(0xFF2563EB), fontSize: 13)),
+                                    ],
+                                  ),
+                                  const SizedBox(height: 8),
+                                  const Text("• Gunakan ### [Judul] untuk Sub-Judul (Warna Oranye)\n• Bungkus kode dengan [CODE] ... [/CODE] untuk Blok Boilerplate\n• Bungkus dengan [NOTE] ... [/NOTE] untuk Kotak Peringatan Bohlam", 
+                                    style: TextStyle(color: Color(0xFF3B82F6), fontSize: 12, height: 1.5)
+                                  ),
+                                ],
+                              ),
+                            ),
+                            const SizedBox(height: 20),
+
+                            // Toolbar Editor Palsu & Text Area
+                            Container(
+                              decoration: BoxDecoration(
+                                border: Border.all(color: const Color(0xFFE2E8F0)),
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              child: Column(
+                                children: [
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                                    decoration: const BoxDecoration(
+                                      border: Border(bottom: BorderSide(color: Color(0xFFE2E8F0))),
+                                      color: Color(0xFFF8FAFC),
+                                      borderRadius: BorderRadius.vertical(top: Radius.circular(12)),
+                                    ),
+                                    child: Row(
+                                      children: const [
+                                        Icon(Icons.format_bold_rounded, color: Color(0xFF64748B), size: 20),
+                                        SizedBox(width: 16),
+                                        Icon(Icons.format_italic_rounded, color: Color(0xFF64748B), size: 20),
+                                        SizedBox(width: 16),
+                                        Icon(Icons.format_underlined_rounded, color: Color(0xFF64748B), size: 20),
+                                        SizedBox(width: 16),
+                                        Icon(Icons.title_rounded, color: Color(0xFFFF7A22), size: 20),
+                                        SizedBox(width: 16),
+                                        Icon(Icons.code_rounded, color: Color(0xFF64748B), size: 20),
+                                        SizedBox(width: 16),
+                                        Icon(Icons.lightbulb_outline_rounded, color: Color(0xFFFFD54F), size: 20),
+                                      ],
+                                    ),
+                                  ),
+                                  TextFormField(
+                                    controller: _isiController,
+                                    decoration: const InputDecoration(
+                                      hintText: 'Ketik isi materi di sini...',
+                                      border: InputBorder.none,
+                                      contentPadding: EdgeInsets.all(16),
+                                    ),
+                                    maxLines: 12,
+                                    validator: (v) => v!.isEmpty ? 'Konten materi tidak boleh kosong' : null,
+                                  ),
+                                ],
+                              ),
+                            ),
+                            const SizedBox(height: 20),
+                            const Text("Lampiran/Media", style: TextStyle(fontWeight: FontWeight.bold, color: Color(0xFF334155))),
+                            const SizedBox(height: 8),
+                            Container(
+                              width: double.infinity,
+                              padding: const EdgeInsets.all(24),
+                              decoration: BoxDecoration(
+                                border: Border.all(color: const Color(0xFFE2E8F0), style: BorderStyle.solid),
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              child: Column(
+                                children: [
+                                  const Icon(Icons.cloud_upload_outlined, size: 32, color: Color(0xFF64748B)),
+                                  const SizedBox(height: 12),
+                                  OutlinedButton.icon(
+                                    onPressed: () {},
+                                    icon: const Icon(Icons.attach_file_rounded, size: 16),
+                                    label: const Text("Unggah File"),
+                                    style: OutlinedButton.styleFrom(
+                                      foregroundColor: const Color(0xFF334155),
+                                      side: const BorderSide(color: Color(0xFFE2E8F0)),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
-                      onPressed: () {
-                        setState(() {
-                          _namaFileDiupload = "Asset_Boilerplate_HTML5.zip";
-                          _ukuranFileDiupload = "1.8 MB";
-                        });
-                      },
-                      icon: const Icon(Icons.attachment_rounded, size: 16, color: Color(0xFF334155)),
-                      label: const Text("Unggah File", style: TextStyle(color: Color(0xFF334155), fontSize: 12)),
-                    )
-                  ] else ...[
-                    Row(
+                    ),
+                  ),
+                  // Bottom Actions
+                  Container(
+                    padding: const EdgeInsets.all(16),
+                    decoration: const BoxDecoration(
+                      color: Colors.white,
+                      border: Border(top: BorderSide(color: Color(0xFFE2E8F0))),
+                    ),
+                    child: Row(
                       children: [
-                        const Icon(Icons.insert_drive_file_rounded, color: Color(0xFFFF7A22), size: 32),
-                        const SizedBox(width: 12),
                         Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(_namaFileDiupload!, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: Color(0xFF1E293B))),
-                              Text(_ukuranFileDiupload!, style: const TextStyle(fontSize: 11, color: Color(0xFF64748B))),
-                            ],
+                          child: OutlinedButton(
+                            style: OutlinedButton.styleFrom(
+                              padding: const EdgeInsets.symmetric(vertical: 16),
+                              side: const BorderSide(color: Color(0xFF6B11D6)),
+                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                            ),
+                            onPressed: () => Navigator.pop(context),
+                            child: const Text('Batal', style: TextStyle(color: Color(0xFF6B11D6), fontWeight: FontWeight.bold)),
                           ),
                         ),
-                        IconButton(
-                          icon: const Icon(Icons.cancel_rounded, color: Colors.redAccent),
-                          onPressed: () {
-                            setState(() {
-                              _namaFileDiupload = null;
-                              _ukuranFileDiupload = null;
-                            });
-                          },
-                        )
+                        const SizedBox(width: 16),
+                        Expanded(
+                          child: ElevatedButton(
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: const Color(0xFF6B11D6),
+                              padding: const EdgeInsets.symmetric(vertical: 16),
+                              elevation: 0,
+                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                            ),
+                            onPressed: _saveMateri,
+                            child: Text(isEdit ? 'Simpan Perubahan' : 'Simpan', style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                          ),
+                        ),
                       ],
-                    )
-                  ],
+                    ),
+                  )
                 ],
               ),
             ),
-            const SizedBox(height: 30),
-
-            // Tombol Aksi di Bawah
-            Row(
-              children: [
-                Expanded(
-                  child: OutlinedButton(
-                    style: OutlinedButton.styleFrom(
-                      side: const BorderSide(color: Color(0xFF6B11D6)),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                      minimumSize: const Size(0, 44),
-                    ),
-                    onPressed: () => Navigator.pop(context),
-                    child: const Text("Batal", style: TextStyle(color: Color(0xFF6B11D6), fontWeight: FontWeight.bold)),
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF6B11D6),
-                      elevation: 0,
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                      minimumSize: const Size(0, 44),
-                    ),
-                    onPressed: () async {
-                      final judul = _judulController.text.trim();
-                      final isi = _isiController.text.trim();
-                      final messenger = ScaffoldMessenger.of(context);
-                      final navigator = Navigator.of(context);
-
-                      if (judul.isEmpty) {
-                        messenger.showSnackBar(
-                          const SnackBar(content: Text('Judul materi tidak boleh kosong.')),
-                        );
-                        return;
-                      }
-
-                      if (isEdit) {
-                        await DatabaseHelper.instance.updateModul(widget.modul!.id!, {
-                          'judul': judul,
-                        });
-
-                        if (widget.konten != null) {
-                          await DatabaseHelper.instance.updateKonten(widget.konten!.id!, {
-                            'penjelasan_materi': isi,
-                            'cuplikan_kode': '',
-                            'penjelasan_kode': '',
-                          });
-
-                          if (!mounted) return;
-                          messenger.showSnackBar(
-                            const SnackBar(content: Text('Perubahan materi berhasil disimpan.')),
-                          );
-                        }
-                      } else {
-                        if (widget.kategoriId == null) {
-                          if (!mounted) return;
-                          messenger.showSnackBar(
-                            const SnackBar(content: Text('Kategori tidak valid.')),
-                          );
-                          return;
-                        }
-
-                        final newModulId = await DatabaseHelper.instance.insertModul({
-                          'kategori_id': widget.kategoriId,
-                          'judul': judul,
-                          'order_index': 0,
-                        });
-                        await DatabaseHelper.instance.insertKonten({
-                          'modul_id': newModulId,
-                          'penjelasan_materi': isi,
-                          'cuplikan_kode': '',
-                          'penjelasan_kode': '',
-                        });
-
-                        if (!mounted) return;
-                        messenger.showSnackBar(
-                          const SnackBar(content: Text('Materi berhasil ditambahkan.')),
-                        );
-                      }
-
-                      if (!mounted) return;
-                      navigator.pop(true);
-                    },
-                    child: Text(isEdit ? "Simpan Perubahan" : "Simpan", style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
-                  ),
-                ),
-              ],
-            )
-          ],
-        ),
-      ),
     );
-  }
-
-  Widget _buildToolbarIcon(IconData icon) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 2.0),
-      child: Icon(icon, color: const Color(0xFF64748B), size: 18),
-    );
-  }
-
-  // Fungsi pembantu untuk menyisipkan tag format ke dalam posisi cursor pengetikan teks
-  void _insertTextTags(String prefix, String suffix) {
-    final text = _isiController.text;
-    final selection = _isiController.selection;
-    
-    final newText = text.replaceRange(selection.start, selection.end, '$prefix$suffix');
-    _isiController.text = newText;
-    
-    // Kembalikan fokus kursor ke posisi tengah tag setelah disisipkan
-    _isiController.selection = TextSelection.collapsed(offset: selection.start + prefix.length);
   }
 }
