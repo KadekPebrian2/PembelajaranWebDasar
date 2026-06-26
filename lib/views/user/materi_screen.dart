@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../materi/materi_detail_screen.dart'; // Mengarah ke single screen dinamis kita
+import '../materi/materi_detail_screen.dart';
 
 class MateriScreen extends StatelessWidget {
   const MateriScreen({Key? key}) : super(key: key);
@@ -7,24 +7,23 @@ class MateriScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF8F9FA), 
+      // 🔥 OTOMATIS: Mengikuti background scaffold tema aktif
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 20.0),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text(
+              Text(
                 "Materi Pembelajaran",
                 style: TextStyle(
                   fontSize: 24,
                   fontWeight: FontWeight.bold,
-                  color: Colors.black87,
+                  color: Theme.of(context).textTheme.bodyLarge?.color, // Teks dinamis
                 ),
               ),
               const SizedBox(height: 25),
 
-              // 1. HTML Card -> Mengarah langsung ke MateriDetailScreen
               _buildMenuMateri(
                 context: context,
                 imagePath: 'assets/images/html_logo.png',
@@ -37,7 +36,7 @@ class MateriScreen extends StatelessWidget {
                     MaterialPageRoute(
                       builder: (_) => const MateriDetailScreen(
                         kategori: "HTML",
-                        temaColor: Color(0xFFFF7A22), // Warna tema HTML (Oranye)
+                        temaColor: Color(0xFFFF7A22),
                       ),
                     ),
                   );
@@ -45,12 +44,11 @@ class MateriScreen extends StatelessWidget {
               ),
               const SizedBox(height: 16),
 
-              // 2. CSS Card -> Mengarah langsung ke MateriDetailScreen
               _buildMenuMateri(
                 context: context,
                 imagePath: 'assets/images/css_logo.png',
                 title: "CSS",
-                subtitle: "Belajar styling dan layouting",
+                subtitle: "Belajar mendesain tampilan website",
                 badgeColor: const Color(0xFFEBF4FF),
                 onTap: () {
                   Navigator.push(
@@ -58,7 +56,7 @@ class MateriScreen extends StatelessWidget {
                     MaterialPageRoute(
                       builder: (_) => const MateriDetailScreen(
                         kategori: "CSS",
-                        temaColor: Color(0xFF2196F3), // Warna tema CSS (Biru)
+                        temaColor: Color(0xFF2196F3),
                       ),
                     ),
                   );
@@ -66,12 +64,11 @@ class MateriScreen extends StatelessWidget {
               ),
               const SizedBox(height: 16),
 
-              // 3. JavaScript Card -> Mengarah langsung ke MateriDetailScreen
               _buildMenuMateri(
                 context: context,
                 imagePath: 'assets/images/js_logo.png',
                 title: "JavaScript",
-                subtitle: "Belajar interaktivitas website",
+                subtitle: "Belajar logika interaktif website",
                 badgeColor: const Color(0xFFFFF7E5),
                 onTap: () {
                   Navigator.push(
@@ -79,7 +76,7 @@ class MateriScreen extends StatelessWidget {
                     MaterialPageRoute(
                       builder: (_) => const MateriDetailScreen(
                         kategori: "JS",
-                        temaColor: Color(0xFFFFB300), // Warna tema JS (Kuning/Emas)
+                        temaColor: Color(0xFFFFB300),
                       ),
                     ),
                   );
@@ -100,16 +97,17 @@ class MateriScreen extends StatelessWidget {
     required Color badgeColor,
     required VoidCallback onTap,
   }) {
+    final bool isDark = Theme.of(context).brightness == Brightness.dark;
+
     return Container(
-      width: double.infinity,
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: Theme.of(context).cardColor, // Kartu gelap/terang otomatis
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.05),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
+            color: isDark ? Colors.transparent : Colors.black.withValues(alpha: 0.04),
+            blurRadius: 15,
+            offset: const Offset(0, 5),
           ),
         ],
       ),
@@ -119,28 +117,18 @@ class MateriScreen extends StatelessWidget {
           borderRadius: BorderRadius.circular(20),
           onTap: onTap,
           child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 18.0),
+            padding: const EdgeInsets.all(20.0),
             child: Row(
               children: [
                 Container(
-                  width: 55,
-                  height: 55,
-                  padding: const EdgeInsets.all(10.0),
+                  width: 60,
+                  height: 60,
                   decoration: BoxDecoration(
-                    color: badgeColor,
-                    borderRadius: BorderRadius.circular(14),
+                    color: isDark ? Colors.white.withValues(alpha: 0.1) : badgeColor,
+                    borderRadius: BorderRadius.circular(16),
                   ),
-                  child: Image.asset(
-                    imagePath,
-                    fit: BoxFit.contain,
-                    errorBuilder: (context, error, stackTrace) {
-                      return Center(
-                        child: Text(
-                          title.substring(0, 2).toUpperCase(),
-                          style: TextStyle(color: Colors.deepPurple.shade700, fontWeight: FontWeight.bold, fontSize: 12),
-                        ),
-                      );
-                    },
+                  child: Center(
+                    child: Image.asset(imagePath, width: 35, fit: BoxFit.contain),
                   ),
                 ),
                 const SizedBox(width: 20),
@@ -150,26 +138,26 @@ class MateriScreen extends StatelessWidget {
                     children: [
                       Text(
                         title,
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 18,
                           fontWeight: FontWeight.bold,
-                          color: Colors.black87,
+                          color: Theme.of(context).textTheme.bodyLarge?.color,
                         ),
                       ),
                       const SizedBox(height: 4),
                       Text(
                         subtitle,
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 14,
-                          color: Colors.black54,
+                          color: Theme.of(context).textTheme.bodySmall?.color,
                         ),
                       ),
                     ],
                   ),
                 ),
-                const Icon(
+                Icon(
                   Icons.chevron_right,
-                  color: Colors.grey,
+                  color: Theme.of(context).dividerColor,
                   size: 28,
                 ),
               ],

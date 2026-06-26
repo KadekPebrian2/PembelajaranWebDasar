@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../../providers/course_provider.dart'; // Sesuaikan path provider Anda
+import '../../providers/course_provider.dart'; 
+import '../../providers/theme_provider.dart'; // <-- 1. Tambah pemanggil tema
 
 class MateriDetailScreen extends StatefulWidget {
   final String kategori; // HTML, CSS, atau JS
@@ -30,14 +31,16 @@ class _MateriDetailScreenState extends State<MateriDetailScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Provider.of<ThemeProvider>(context).isDarkMode; // <-- Panggil tema
+
     // KONDISI 1: JIKA BELUM PILIH BAB -> TAMPILKAN DAFTAR BAB MATERI DARI CLOUD
     if (_activeBabMateri == null) {
       return Scaffold(
-        backgroundColor: const Color(0xFFF9FAFC),
+        backgroundColor: isDark ? const Color(0xFF0F172A) : const Color(0xFFF9FAFC), // <-- Latar belakang dinamis
         appBar: AppBar(
           elevation: 0,
-          backgroundColor: Colors.white,
-          foregroundColor: const Color(0xFF1E293B),
+          backgroundColor: isDark ? const Color(0xFF1E293B) : Colors.white, // <-- AppBar dinamis
+          foregroundColor: isDark ? Colors.white : const Color(0xFF1E293B),
           leading: IconButton(
             icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20),
             onPressed: () => Navigator.pop(context),
@@ -63,7 +66,7 @@ class _MateriDetailScreenState extends State<MateriDetailScreen> {
               return Center(
                 child: Text(
                   "Materi belum tersedia untuk kategori ${widget.kategori}.",
-                  style: const TextStyle(color: Color(0xFF64748B)),
+                  style: TextStyle(color: isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B)),
                 ),
               );
             }
@@ -79,11 +82,11 @@ class _MateriDetailScreenState extends State<MateriDetailScreen> {
                 return Container(
                   margin: const EdgeInsets.only(bottom: 16),
                   decoration: BoxDecoration(
-                    color: Colors.white,
+                    color: isDark ? const Color(0xFF1E293B) : Colors.white, // <-- Kartu bab dinamis
                     borderRadius: BorderRadius.circular(16),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.black.withValues(alpha: 0.04),
+                        color: Colors.black.withValues(alpha: isDark ? 0.2 : 0.04),
                         blurRadius: 10,
                         offset: const Offset(0, 4),
                       ),
@@ -119,21 +122,21 @@ class _MateriDetailScreenState extends State<MateriDetailScreen> {
                             const SizedBox(width: 16),
                             Expanded(
                               child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start, // SUDAH DIPERBAIKI DI SINI
+                                crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   Text(
                                     judul,
-                                    style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Color(0xFF0F172A)),
+                                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: isDark ? Colors.white : const Color(0xFF0F172A)),
                                   ),
                                   const SizedBox(height: 4),
-                                  const Text(
+                                  Text(
                                     "Klik untuk mulai membaca modul",
-                                    style: TextStyle(fontSize: 13, color: Color(0xFF64748B)),
+                                    style: TextStyle(fontSize: 13, color: isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B)),
                                   ),
                                 ],
                               ),
                             ),
-                            const Icon(Icons.arrow_forward_ios_rounded, color: Color(0xFFCBD5E1), size: 16),
+                            Icon(Icons.arrow_forward_ios_rounded, color: isDark ? const Color(0xFF475569) : const Color(0xFFCBD5E1), size: 16),
                           ],
                         ),
                       ),
@@ -168,7 +171,7 @@ class _MateriDetailScreenState extends State<MateriDetailScreen> {
     );
   }
 
-  // PARSER TEXT ENGINE
+  // PARSER TEXT ENGINE (100% TIDAK DIUBAH)
   List<Map<String, dynamic>> _parseMateriContent(String rawText) {
     List<Map<String, dynamic>> blocks = [];
     List<String> lines = rawText.split('\n');
@@ -261,7 +264,9 @@ class _BacaMateriScreenState extends State<BacaMateriScreen> {
       context: context,
       barrierDismissible: false,
       builder: (BuildContext context) {
+        final isDark = Provider.of<ThemeProvider>(context, listen: false).isDarkMode;
         return Dialog(
+          backgroundColor: isDark ? const Color(0xFF1E293B) : Colors.white,
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
           child: Padding(
             padding: const EdgeInsets.all(24.0),
@@ -281,15 +286,15 @@ class _BacaMateriScreenState extends State<BacaMateriScreen> {
                   ),
                 ),
                 const SizedBox(height: 20),
-                const Text(
+                Text(
                   "Luar Biasa! 🎉",
-                  style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Color(0xFF1E293B)),
+                  style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: isDark ? Colors.white : const Color(0xFF1E293B)),
                 ),
                 const SizedBox(height: 10),
                 Text(
                   "Kamu telah menyelesaikan bab\n\"${widget.title}\".\n\nSatu langkah lebih dekat untuk menguasai ${widget.kategori}!",
                   textAlign: TextAlign.center,
-                  style: const TextStyle(fontSize: 14, color: Color(0xFF64748B), height: 1.5),
+                  style: TextStyle(fontSize: 14, color: isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B), height: 1.5),
                 ),
                 const SizedBox(height: 24),
                 SizedBox(
@@ -321,12 +326,14 @@ class _BacaMateriScreenState extends State<BacaMateriScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Provider.of<ThemeProvider>(context).isDarkMode; // <-- Panggil tema
+
     return Scaffold(
-      backgroundColor: const Color(0xFFF8F9FA),
+      backgroundColor: isDark ? const Color(0xFF0F172A) : const Color(0xFFF8F9FA), // <-- Latar belakang bacaan dinamis
       appBar: AppBar(
         title: Text(widget.title, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
-        backgroundColor: Colors.white,
-        foregroundColor: const Color(0xFF0F172A),
+        backgroundColor: isDark ? const Color(0xFF1E293B) : Colors.white, // <-- AppBar dinamis
+        foregroundColor: isDark ? Colors.white : const Color(0xFF0F172A),
         elevation: 0,
         scrolledUnderElevation: 0,
         leading: IconButton(
@@ -346,9 +353,9 @@ class _BacaMateriScreenState extends State<BacaMateriScreen> {
                     margin: const EdgeInsets.only(bottom: 16),
                     padding: const EdgeInsets.all(14),
                     decoration: BoxDecoration(
-                      color: const Color(0xFFF0FDF4),
+                      color: isDark ? const Color(0xFF064E3B) : const Color(0xFFF0FDF4),
                       borderRadius: BorderRadius.circular(12),
-                      border: Border.all(color: const Color(0xFFBBF7D0)),
+                      border: Border.all(color: isDark ? const Color(0xFF047857) : const Color(0xFFBBF7D0)),
                     ),
                     child: Row(
                       children: [
@@ -358,7 +365,7 @@ class _BacaMateriScreenState extends State<BacaMateriScreen> {
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              const Text("Media Tambahan Pembelajaran:", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12, color: Color(0xFF14532D))),
+                              Text("Media Tambahan Pembelajaran:", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12, color: isDark ? const Color(0xFFA7F3D0) : const Color(0xFF14532D))),
                               Text(widget.urlMedia, style: const TextStyle(fontSize: 12, color: Color(0xFF16A34A)), maxLines: 1, overflow: TextOverflow.ellipsis),
                             ],
                           ),
@@ -389,9 +396,9 @@ class _BacaMateriScreenState extends State<BacaMateriScreen> {
                     margin: const EdgeInsets.symmetric(vertical: 12),
                     padding: const EdgeInsets.all(16),
                     decoration: BoxDecoration(
-                      color: const Color(0xFFFFF9E6),
+                      color: isDark ? const Color(0xFF451A03) : const Color(0xFFFFF9E6), // <-- Kotak catatan dinamis
                       borderRadius: BorderRadius.circular(12),
-                      border: Border.all(color: const Color(0xFFFFE0B2)),
+                      border: Border.all(color: isDark ? const Color(0xFF92400E) : const Color(0xFFFFE0B2)),
                     ),
                     child: Row(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -401,7 +408,7 @@ class _BacaMateriScreenState extends State<BacaMateriScreen> {
                         Expanded(
                           child: Text(
                             formattedValue, 
-                            style: const TextStyle(color: Color(0xFFB71C1C), fontSize: 13, height: 1.5),
+                            style: TextStyle(color: isDark ? const Color(0xFFFDE68A) : const Color(0xFFB71C1C), fontSize: 13, height: 1.5),
                           ),
                         ),
                       ],
@@ -415,17 +422,17 @@ class _BacaMateriScreenState extends State<BacaMateriScreen> {
                     padding: const EdgeInsets.all(16),
                     width: double.infinity,
                     decoration: BoxDecoration(
-                      color: const Color(0xFFF1F5F9),
+                      color: isDark ? const Color(0xFF1E293B) : const Color(0xFFF1F5F9), // <-- Kotak kode dinamis
                       borderRadius: BorderRadius.circular(12),
-                      border: Border.all(color: const Color(0xFFE2E8F0)),
+                      border: Border.all(color: isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0)),
                     ),
                     child: SingleChildScrollView(
                       scrollDirection: Axis.horizontal,
                       child: Text(
                         formattedValue,
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontFamily: 'monospace',
-                          color: Color(0xFF334155),
+                          color: isDark ? const Color(0xFFE2E8F0) : const Color(0xFF334155),
                           fontSize: 13,
                           fontWeight: FontWeight.w500,
                         ),
@@ -438,7 +445,7 @@ class _BacaMateriScreenState extends State<BacaMateriScreen> {
                   padding: const EdgeInsets.symmetric(vertical: 6),
                   child: Text(
                     formattedValue,
-                    style: const TextStyle(fontSize: 14, color: Color(0xFF334155), height: 1.6),
+                    style: TextStyle(fontSize: 14, color: isDark ? const Color(0xFFE2E8F0) : const Color(0xFF334155), height: 1.6), // <-- Teks materi dinamis
                   ),
                 );
               },
@@ -447,15 +454,15 @@ class _BacaMateriScreenState extends State<BacaMateriScreen> {
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
             decoration: BoxDecoration(
-              color: Colors.white,
+              color: isDark ? const Color(0xFF1E293B) : Colors.white, // <-- Bottom bar dinamis
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.04),
+                  color: Colors.black.withValues(alpha: isDark ? 0.2 : 0.04),
                   blurRadius: 10,
                   offset: const Offset(0, -4),
                 )
               ],
-              border: const Border(top: BorderSide(color: Color(0xFFE2E8F0))),
+              border: Border(top: BorderSide(color: isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0))),
             ),
             child: SizedBox(
               width: double.infinity,

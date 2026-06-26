@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart'; // <-- Tambahkan import ini
+import 'package:provider/provider.dart'; 
 import '../../core/theme.dart';
-import '../../providers/auth_provider.dart'; // <-- Tambahkan import ini
+import '../../providers/auth_provider.dart'; 
+import '../../providers/theme_provider.dart';
 import 'login_screen.dart';
 
 class RegisterScreen extends StatefulWidget {
-  const RegisterScreen({Key? key}) : super(key: key); // Ditambahkan const constructor agar rapi
+  const RegisterScreen({Key? key}) : super(key: key); 
 
   @override
   _RegisterScreenState createState() => _RegisterScreenState();
@@ -16,7 +17,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
   final _emailCtrl = TextEditingController();
   final _passCtrl = TextEditingController();
   final _confirmPassCtrl = TextEditingController();
-  bool _isLoading = false; // Efek loading saat proses daftar berlangsung
+  bool _isLoading = false; 
 
   @override
   void dispose() {
@@ -29,8 +30,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Provider.of<ThemeProvider>(context).isDarkMode;
+
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: isDark ? const Color(0xFF0F172A) : Colors.white,
       body: SingleChildScrollView(
         child: Column(
           children: [
@@ -73,15 +76,13 @@ class _RegisterScreenState extends State<RegisterScreen> {
               padding: const EdgeInsets.all(30.0),
               child: Column(
                 children: [
-                  _buildTextField(
-                      "Nama Lengkap", Icons.person, _namaCtrl, false),
+                  _buildTextField("Nama Lengkap", Icons.person, _namaCtrl, false, isDark),
                   const SizedBox(height: 15),
-                  _buildTextField("Email", Icons.email, _emailCtrl, false),
+                  _buildTextField("Email", Icons.email, _emailCtrl, false, isDark),
                   const SizedBox(height: 15),
-                  _buildTextField("Password", Icons.lock, _passCtrl, true),
+                  _buildTextField("Password", Icons.lock, _passCtrl, true, isDark),
                   const SizedBox(height: 15),
-                  _buildTextField("Konfirmasi Password", Icons.lock_outline,
-                      _confirmPassCtrl, true),
+                  _buildTextField("Konfirmasi Password", Icons.lock_outline, _confirmPassCtrl, true, isDark),
                   const SizedBox(height: 30),
 
                   // Tombol Daftar
@@ -100,7 +101,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
                         String password = _passCtrl.text.trim();
                         String confirmPassword = _confirmPassCtrl.text.trim();
 
-                        // 1. Validasi Kolom Kosong
                         if (nama.isEmpty || email.isEmpty || password.isEmpty) {
                           ScaffoldMessenger.of(context).showSnackBar(
                             const SnackBar(
@@ -110,7 +110,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
                           return;
                         }
 
-                        // 2. Validasi Format Email Publik
                         final emailRegex = RegExp(
                             r'^[\w-\.]+@(gmail\.com|yahoo\.com|yahoo\.co\.id|outlook\.com|hotmail\.com)$',
                             caseSensitive: false);
@@ -125,7 +124,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
                           return;
                         }
 
-                        // 3. Validasi Panjang Minimal Password
                         if (password.length < 6) {
                           ScaffoldMessenger.of(context).showSnackBar(
                             const SnackBar(
@@ -137,7 +135,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
                           return;
                         }
 
-                        // 4. Validasi Konfirmasi Password
                         if (password != confirmPassword) {
                           ScaffoldMessenger.of(context).showSnackBar(
                             const SnackBar(
@@ -147,17 +144,16 @@ class _RegisterScreenState extends State<RegisterScreen> {
                           return;
                         }
 
-                        // Nyalakan efek loading spinner
                         setState(() {
                           _isLoading = true;
                         });
 
-                        // AKSI BARU: Daftarkan langsung ke Server Firebase Auth lewat Provider
                         try {
                           final authProvider = Provider.of<AuthProvider>(context, listen: false);
-                          bool isSuccess = await authProvider.registerWithFirebase(email, password);
+                          
+                          // 🔥 SELESAI DISESUAIKAN: Sekarang mengirimkan data 'nama' ke AuthProvider
+                          bool isSuccess = await authProvider.registerWithFirebase(email, password, nama);
 
-                          // Matikan efek loading spinner
                           setState(() {
                             _isLoading = false;
                           });
@@ -172,13 +168,11 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                   backgroundColor: Colors.green),
                             );
 
-                            // Arahkan kembali ke halaman Login
                             Navigator.pushReplacement(
                                 context,
                                 MaterialPageRoute(
                                     builder: (_) => const LoginScreen()));
                           } else {
-                            // Gagal mendaftar dari sisi Firebase (biasanya karena email duplikat)
                             ScaffoldMessenger.of(context).showSnackBar(
                               const SnackBar(
                                   content: Text(
@@ -215,11 +209,11 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   ),
                   const SizedBox(height: 15),
 
-                  // Tombol Login (Jika sudah punya akun)
+                  // Tombol Login
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      const Text("Sudah punya akun? "),
+                      Text("Sudah punya akun? ", style: TextStyle(color: isDark ? const Color(0xFF94A3B8) : Colors.black87)),
                       GestureDetector(
                         onTap: () {
                           Navigator.pushReplacement(
@@ -243,21 +237,21 @@ class _RegisterScreenState extends State<RegisterScreen> {
     );
   }
 
-  // Widget bantuan untuk TextField
-  Widget _buildTextField(String hint, IconData icon,
-      TextEditingController controller, bool isPassword) {
+  Widget _buildTextField(String hint, IconData icon, TextEditingController controller, bool isPassword, bool isDark) {
     return Container(
       decoration: BoxDecoration(
-        color: const Color(0xFFF9FAFB),
+        color: isDark ? const Color(0xFF1E293B) : const Color(0xFFF9FAFB), 
         borderRadius: BorderRadius.circular(15),
-        border: Border.all(color: Colors.black12),
+        border: Border.all(color: isDark ? const Color(0xFF334155) : Colors.black12),
       ),
       child: TextField(
         controller: controller,
         obscureText: isPassword,
+        style: TextStyle(color: isDark ? Colors.white : Colors.black87), 
         decoration: InputDecoration(
           hintText: hint,
-          prefixIcon: Icon(icon, color: Colors.black54),
+          hintStyle: TextStyle(color: isDark ? const Color(0xFF64748B) : Colors.black38),
+          prefixIcon: Icon(icon, color: isDark ? const Color(0xFF94A3B8) : Colors.black54),
           border: InputBorder.none,
           contentPadding: const EdgeInsets.symmetric(vertical: 15),
         ),
