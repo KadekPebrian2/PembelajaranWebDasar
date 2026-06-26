@@ -1,16 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import '../../providers/course_provider.dart'; // Sesuaikan path provider Anda
 
 class MateriDetailScreen extends StatefulWidget {
-  final String kategori;
-  final String title;
-  final List<Map<String, dynamic>> konten;
+  final String kategori; // HTML, CSS, atau JS
   final Color temaColor;
 
   const MateriDetailScreen({
-    Key? key, // PERBAIKAN: Ditambahkan tanda tanya (?) agar tidak error null safety
+    Key? key,
     required this.kategori,
-    required this.title,
-    required this.konten,
     required this.temaColor,
   }) : super(key: key);
 
@@ -19,9 +17,245 @@ class MateriDetailScreen extends StatefulWidget {
 }
 
 class _MateriDetailScreenState extends State<MateriDetailScreen> {
+  // Menyimpan data bab materi aktif yang sedang dibaca siswa
+  Map<String, dynamic>? _activeBabMateri;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      Provider.of<CourseProvider>(context, listen: false).fetchMateri(widget.kategori);
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    // KONDISI 1: JIKA BELUM PILIH BAB -> TAMPILKAN DAFTAR BAB MATERI DARI CLOUD
+    if (_activeBabMateri == null) {
+      return Scaffold(
+        backgroundColor: const Color(0xFFF9FAFC),
+        appBar: AppBar(
+          elevation: 0,
+          backgroundColor: Colors.white,
+          foregroundColor: const Color(0xFF1E293B),
+          leading: IconButton(
+            icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20),
+            onPressed: () => Navigator.pop(context),
+          ),
+          title: Text(
+            "Materi ${widget.kategori}",
+            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+          ),
+        ),
+        body: Consumer<CourseProvider>(
+          builder: (context, provider, child) {
+            if (provider.isLoading) {
+              return Center(
+                child: CircularProgressIndicator(
+                  valueColor: AlwaysStoppedAnimation<Color>(widget.temaColor),
+                ),
+              );
+            }
+
+            final listMateri = provider.daftarMateri;
+
+            if (listMateri.isEmpty) {
+              return Center(
+                child: Text(
+                  "Materi belum tersedia untuk kategori ${widget.kategori}.",
+                  style: const TextStyle(color: Color(0xFF64748B)),
+                ),
+              );
+            }
+
+            return ListView.builder(
+              padding: const EdgeInsets.all(24),
+              itemCount: listMateri.length,
+              itemBuilder: (context, index) {
+                final bab = listMateri[index] as Map<String, dynamic>;
+                final String nomorBab = "${index + 1}"; 
+                final String judul = bab['judul_bab'] ?? "Tanpa Judul";
+
+                return Container(
+                  margin: const EdgeInsets.only(bottom: 16),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(16),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withValues(alpha: 0.04),
+                        blurRadius: 10,
+                        offset: const Offset(0, 4),
+                      ),
+                    ],
+                  ),
+                  child: Material(
+                    color: Colors.transparent,
+                    child: InkWell(
+                      borderRadius: BorderRadius.circular(16),
+                      onTap: () {
+                        setState(() {
+                          _activeBabMateri = bab;
+                        });
+                      },
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
+                        child: Row(
+                          children: [
+                            Container(
+                              width: 44,
+                              height: 44,
+                              decoration: BoxDecoration(
+                                color: widget.temaColor.withValues(alpha: 0.1),
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              child: Center(
+                                child: Text(
+                                  nomorBab,
+                                  style: TextStyle(color: widget.temaColor, fontWeight: FontWeight.bold, fontSize: 16),
+                                ),
+                              ),
+                            ),
+                            const SizedBox(width: 16),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start, // SUDAH DIPERBAIKI DI SINI
+                                children: [
+                                  Text(
+                                    judul,
+                                    style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Color(0xFF0F172A)),
+                                  ),
+                                  const SizedBox(height: 4),
+                                  const Text(
+                                    "Klik untuk mulai membaca modul",
+                                    style: TextStyle(fontSize: 13, color: Color(0xFF64748B)),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            const Icon(Icons.arrow_forward_ios_rounded, color: Color(0xFFCBD5E1), size: 16),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                );
+              },
+            );
+          },
+        ),
+      );
+    }
+
+    // KONDISI 2: JIKA BAB DIPILIH -> PROSES & TAMPILKAN KONTEN BACAAN INTERAKTIF
+    final String judulAktif = _activeBabMateri!['judul_bab'] ?? "Tanpa Judul";
+    final String isiMateriRaw = _activeBabMateri!['isi_materi'] ?? "";
+    final String urlMedia = _activeBabMateri!['url_media'] ?? "";
+
+    List<Map<String, dynamic>> kontenDiproses = _parseMateriContent(isiMateriRaw);
+
+    return BacaMateriScreen(
+      kategori: widget.kategori,
+      title: judulAktif,
+      konten: kontenDiproses,
+      urlMedia: urlMedia,
+      temaColor: widget.temaColor,
+      onBackToDaftar: () {
+        setState(() {
+          _activeBabMateri = null;
+        });
+      },
+    );
+  }
+
+  // PARSER TEXT ENGINE
+  List<Map<String, dynamic>> _parseMateriContent(String rawText) {
+    List<Map<String, dynamic>> blocks = [];
+    List<String> lines = rawText.split('\n');
+    
+    String currentCode = "";
+    String currentNote = "";
+    bool inCode = false;
+    bool inNote = false;
+
+    for (String line in lines) {
+      if (line.contains('[CODE]')) {
+        inCode = true;
+        currentCode = "${line.replaceAll('[CODE]', '')}\n";
+        if (line.contains('[/CODE]')) {
+          inCode = false;
+          currentCode = currentCode.replaceAll('[/CODE]', '');
+          blocks.add({'type': 'code', 'value': currentCode.trim()});
+        }
+        continue;
+      }
+      if (line.contains('[/CODE]')) {
+        inCode = false;
+        currentCode += line.replaceAll('[/CODE]', '');
+        blocks.add({'type': 'code', 'value': currentCode.trim()});
+        continue;
+      }
+      if (inCode) {
+        currentCode += "$line\n";
+        continue;
+      }
+
+      if (line.contains('[NOTE]')) {
+        inNote = true;
+        currentNote = "${line.replaceAll('[NOTE]', '')}\n";
+        if (line.contains('[/NOTE]')) {
+          inNote = false;
+          currentNote = currentNote.replaceAll('[/NOTE]', '');
+          blocks.add({'type': 'tip', 'value': currentNote.trim()});
+        }
+        continue;
+      }
+      if (line.contains('[/NOTE]')) {
+        inNote = false;
+        currentNote += line.replaceAll('[/NOTE]', '');
+        blocks.add({'type': 'tip', 'value': currentNote.trim()});
+        continue;
+      }
+      if (inNote) {
+        currentNote += "$line\n";
+        continue;
+      }
+
+      if (line.trim().startsWith('###')) {
+        blocks.add({'type': 'header', 'value': line.replaceAll('###', '').trim()});
+      } else if (line.trim().isNotEmpty) {
+        blocks.add({'type': 'text', 'value': line.trim()});
+      }
+    }
+    return blocks;
+  }
+}
+
+class BacaMateriScreen extends StatefulWidget {
+  final String kategori;
+  final String title;
+  final List<Map<String, dynamic>> konten;
+  final String urlMedia;
+  final Color temaColor;
+  final VoidCallback onBackToDaftar;
+
+  const BacaMateriScreen({
+    Key? key,
+    required this.kategori,
+    required this.title,
+    required this.konten,
+    required this.urlMedia,
+    required this.temaColor,
+    required this.onBackToDaftar,
+  }) : super(key: key);
+
+  @override
+  State<BacaMateriScreen> createState() => _BacaMateriScreenState();
+}
+
+class _BacaMateriScreenState extends State<BacaMateriScreen> {
   bool _isSelesaiDibaca = false;
 
-  // FUNGSIONAL POP-UP DIALOG APRESIASI MENARIK & AUTO CLOSE
   void _tampilkanDialogSukses(BuildContext context) {
     showDialog(
       context: context,
@@ -34,11 +268,10 @@ class _MateriDetailScreenState extends State<MateriDetailScreen> {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                // Ikon Apresiasi Menarik
                 Container(
                   padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(
-                    color: widget.temaColor.withValues(alpha: 0.1), // PERBAIKAN: Menggunakan .withValues()
+                    color: widget.temaColor.withValues(alpha: 0.1),
                     shape: BoxShape.circle,
                   ),
                   child: Icon(
@@ -69,8 +302,8 @@ class _MateriDetailScreenState extends State<MateriDetailScreen> {
                       elevation: 0,
                     ),
                     onPressed: () {
-                      Navigator.pop(context); // Tutup Pop-up Dialog
-                      Navigator.pop(context); // Keluar dari Halaman Materi
+                      Navigator.pop(context); 
+                      widget.onBackToDaftar(); 
                     },
                     child: const Text(
                       "Keren, Lanjutkan!",
@@ -96,38 +329,83 @@ class _MateriDetailScreenState extends State<MateriDetailScreen> {
         foregroundColor: const Color(0xFF0F172A),
         elevation: 0,
         scrolledUnderElevation: 0,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20),
+          onPressed: widget.onBackToDaftar,
+        ),
       ),
       body: Column(
         children: [
           Expanded(
             child: ListView.builder(
               padding: const EdgeInsets.all(20),
-              itemCount: widget.konten.length,
+              itemCount: widget.konten.length + (widget.urlMedia.isNotEmpty ? 1 : 0),
               itemBuilder: (context, index) {
-                final item = widget.konten[index];
+                if (widget.urlMedia.isNotEmpty && index == 0) {
+                  return Container(
+                    margin: const EdgeInsets.only(bottom: 16),
+                    padding: const EdgeInsets.all(14),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFF0FDF4),
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: const Color(0xFFBBF7D0)),
+                    ),
+                    child: Row(
+                      children: [
+                        const Icon(Icons.link_rounded, color: Color(0xFF16A34A)),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const Text("Media Tambahan Pembelajaran:", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12, color: Color(0xFF14532D))),
+                              Text(widget.urlMedia, style: const TextStyle(fontSize: 12, color: Color(0xFF16A34A)), maxLines: 1, overflow: TextOverflow.ellipsis),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  );
+                }
+
+                final itemIndex = widget.urlMedia.isNotEmpty ? index - 1 : index;
+                final item = widget.konten[itemIndex];
                 final String type = item['type'] ?? 'text';
                 final String value = item['value'] ?? '';
+                final String formattedValue = value.replaceAll(r'\n', '\n');
 
                 if (type == 'header') {
                   return Padding(
                     padding: const EdgeInsets.only(top: 16, bottom: 8),
                     child: Text(
-                      value,
-                      style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: widget.temaColor),
+                      formattedValue,
+                      style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color(0xFFFF7A22)),
                     ),
                   );
                 }
-                
+
                 if (type == 'tip') {
                   return Container(
                     margin: const EdgeInsets.symmetric(vertical: 12),
                     padding: const EdgeInsets.all(16),
                     decoration: BoxDecoration(
-                      color: Colors.amber.withValues(alpha: 0.1), // PERBAIKAN: Menggunakan .withValues()
+                      color: const Color(0xFFFFF9E6),
                       borderRadius: BorderRadius.circular(12),
-                      border: Border.all(color: Colors.amber.shade300),
+                      border: Border.all(color: const Color(0xFFFFE0B2)),
                     ),
-                    child: Text(value, style: TextStyle(color: Colors.amber.shade900, fontSize: 13, height: 1.5)),
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Icon(Icons.lightbulb_outline_rounded, color: Color(0xFFFFB300), size: 20),
+                        const SizedBox(width: 10),
+                        Expanded(
+                          child: Text(
+                            formattedValue, 
+                            style: const TextStyle(color: Color(0xFFB71C1C), fontSize: 13, height: 1.5),
+                          ),
+                        ),
+                      ],
+                    ),
                   );
                 }
 
@@ -137,17 +415,17 @@ class _MateriDetailScreenState extends State<MateriDetailScreen> {
                     padding: const EdgeInsets.all(16),
                     width: double.infinity,
                     decoration: BoxDecoration(
-                      color: const Color(0xFFF1F5F9), 
+                      color: const Color(0xFFF1F5F9),
                       borderRadius: BorderRadius.circular(12),
-                      border: Border.all(color: const Color(0xFFE2E8F0)), 
+                      border: Border.all(color: const Color(0xFFE2E8F0)),
                     ),
                     child: SingleChildScrollView(
                       scrollDirection: Axis.horizontal,
                       child: Text(
-                        value,
+                        formattedValue,
                         style: const TextStyle(
-                          fontFamily: 'monospace', 
-                          color: Color(0xFF334155), 
+                          fontFamily: 'monospace',
+                          color: Color(0xFF334155),
                           fontSize: 13,
                           fontWeight: FontWeight.w500,
                         ),
@@ -159,22 +437,20 @@ class _MateriDetailScreenState extends State<MateriDetailScreen> {
                 return Padding(
                   padding: const EdgeInsets.symmetric(vertical: 6),
                   child: Text(
-                    value,
+                    formattedValue,
                     style: const TextStyle(fontSize: 14, color: Color(0xFF334155), height: 1.6),
                   ),
                 );
               },
             ),
           ),
-          
-          // TOMBOL UTAMA SAYA SELESAI MEMBACA
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
             decoration: BoxDecoration(
               color: Colors.white,
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.04), // PERBAIKAN: Menggunakan .withValues()
+                  color: Colors.black.withValues(alpha: 0.04),
                   blurRadius: 10,
                   offset: const Offset(0, -4),
                 )
@@ -182,7 +458,7 @@ class _MateriDetailScreenState extends State<MateriDetailScreen> {
               border: const Border(top: BorderSide(color: Color(0xFFE2E8F0))),
             ),
             child: SizedBox(
-              width: double.infinity, 
+              width: double.infinity,
               height: 48,
               child: ElevatedButton.icon(
                 style: ElevatedButton.styleFrom(

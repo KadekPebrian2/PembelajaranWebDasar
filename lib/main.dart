@@ -1,49 +1,55 @@
-import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:provider/provider.dart';
-import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 
-import 'core/theme.dart';
+// PENTING: Mengimpor file konfigurasi Firebase bawaan proyekmu
+import 'firebase_options.dart'; 
+
+// Import Halaman
+import 'views/auth/login_screen.dart'; 
+
+// Import Providers
 import 'providers/auth_provider.dart';
 import 'providers/course_provider.dart';
 import 'providers/theme_provider.dart';
-import 'views/auth/login_screen.dart';
 
 void main() async {
+  // 1. Pastikan binding Flutter siap
   WidgetsFlutterBinding.ensureInitialized();
   
-  // Perbaikan Error: Inisialisasi Database untuk Windows/Linux/Mac
-  if (Platform.isWindows || Platform.isLinux || Platform.isMacOS) {
-    sqfliteFfiInit();
-    databaseFactory = databaseFactoryFfi;
+  try {
+    // 2. Inisialisasi Firebase dengan menyertakan opsi platform (Web/Android)
+    await Firebase.initializeApp(
+      options: DefaultFirebaseOptions.currentPlatform,
+    );
+    debugPrint("Firebase Berhasil Terhubung dengan Konfigurasi yang Benar!");
+  } catch (e) {
+    debugPrint("Firebase Error saat inisialisasi: $e");
   }
 
-  runApp(
-    MultiProvider(
-      providers: [
-        ChangeNotifierProvider(create: (_) => AuthProvider()),
-        ChangeNotifierProvider(create: (_) => CourseProvider()),
-        ChangeNotifierProvider(create: (_) => ThemeProvider()), 
-      ],
-      child: const WebLearnApp(),
-    ),
-  );
+  runApp(const MyApp());
 }
 
-class WebLearnApp extends StatelessWidget {
-  const WebLearnApp({Key? key}) : super(key: key);
+class MyApp extends StatelessWidget {
+  const MyApp({super.key});
 
   @override
   Widget build(BuildContext context) {
-    final themeProvider = Provider.of<ThemeProvider>(context);
-
-    return MaterialApp(
-      title: 'WebLearn',
-      debugShowCheckedModeBanner: false,
-      theme: AppTheme.lightTheme,
-      darkTheme: AppTheme.darkTheme,
-      themeMode: themeProvider.themeMode, 
-      home: LoginScreen(), // Memulai dari Login
+    return MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (context) => AuthProvider()),
+        ChangeNotifierProvider(create: (context) => CourseProvider()),
+        ChangeNotifierProvider(create: (context) => ThemeProvider()),
+      ],
+      child: MaterialApp(
+        title: 'WebLearn PBL',
+        debugShowCheckedModeBanner: false,
+        theme: ThemeData(
+          colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
+          useMaterial3: true,
+        ),
+        home: const LoginScreen(), 
+      ),
     );
   }
 }

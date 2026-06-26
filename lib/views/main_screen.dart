@@ -6,6 +6,8 @@ import 'user/quiz_screen.dart';
 import 'user/profile_screen.dart';
 
 class MainScreen extends StatefulWidget {
+  const MainScreen({Key? key}) : super(key: key); // Menambahkan constructor const
+
   @override
   _MainScreenState createState() => _MainScreenState();
 }
@@ -14,7 +16,8 @@ class _MainScreenState extends State<MainScreen> {
   int _selectedIndex = 0;
 
   // Daftar halaman yang akan ditampilkan sesuai menu di bawah
-  final List<Widget> _pages = [
+  // Ditambahkan const agar performa aplikasi lebih ringan
+  final List<Widget> _pages = const [
     HomeScreen(),
     MateriScreen(),
     QuizScreen(),

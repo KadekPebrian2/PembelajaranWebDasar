@@ -4,7 +4,6 @@ import 'package:provider/provider.dart';
 import 'register_screen.dart';
 import '../main_screen.dart';
 import '../admin/admin_dashboard.dart';
-import '../../core/database_helper.dart'; 
 import '../../providers/auth_provider.dart'; 
 
 class LoginScreen extends StatefulWidget {
@@ -17,6 +16,7 @@ class LoginScreen extends StatefulWidget {
 class _LoginScreenState extends State<LoginScreen> {
   final _emailCtrl = TextEditingController();
   final _passCtrl = TextEditingController();
+  bool _isLoading = false; // Efek loading saat menekan tombol
 
   @override
   void dispose() {
@@ -123,7 +123,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         ),
                         elevation: 3, 
                       ),
-                      onPressed: () async {
+                      onPressed: _isLoading ? null : () async {
                         String email = _emailCtrl.text.trim();
                         String password = _passCtrl.text.trim();
 
@@ -134,16 +134,22 @@ class _LoginScreenState extends State<LoginScreen> {
                           return;
                         }
 
-                        // Cek ke Database SQLite
-                        final user = await DatabaseHelper.instance.loginUser(email, password);
+                        setState(() {
+                          _isLoading = true;
+                        });
+
+                        // AKSI BARU: Pengecekan Login Melalui Server Firebase Auth
+                        final authProvider = Provider.of<AuthProvider>(context, listen: false);
+                        final user = await authProvider.loginWithFirebase(email, password);
+
+                        setState(() {
+                          _isLoading = false;
+                        });
 
                         if (!mounted) return;
 
                         if (user != null) {
-                          // Simpan data user ke Provider
-                          Provider.of<AuthProvider>(context, listen: false).login(user);
-
-                          // Cek Role
+                          // Logika Cek Role Akun
                           if (user['role'] == 'admin') {
                             Navigator.pushReplacement(
                               context,
@@ -156,22 +162,25 @@ class _LoginScreenState extends State<LoginScreen> {
                             );
                           }
                         } else {
+                          // Jika user gagal/tidak ditemukan di Firebase
                           ScaffoldMessenger.of(context).showSnackBar(
                             const SnackBar(
-                              content: Text("Akun tidak ditemukan atau Password salah. Silakan Daftar!"),
+                              content: Text("Email/Password salah atau koneksi internet terganggu!"),
                               backgroundColor: Colors.redAccent,
                             ),
                           );
                         }
                       },
-                      child: const Text(
-                        "Masuk",
-                        style: TextStyle(
-                          color: Colors.white, 
-                          fontSize: 18, 
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
+                      child: _isLoading 
+                        ? const CircularProgressIndicator(color: Colors.white)
+                        : const Text(
+                            "Masuk",
+                            style: TextStyle(
+                              color: Colors.white, 
+                              fontSize: 18, 
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
                     ),
                   ),
                   const SizedBox(height: 20),
