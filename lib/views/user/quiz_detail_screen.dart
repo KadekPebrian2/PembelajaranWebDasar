@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../providers/course_provider.dart'; 
+import '../../providers/theme_provider.dart'; // <-- 1. Tambah pemanggil tema
 
 class QuizDetailScreen extends StatefulWidget {
   final String kategori;
@@ -95,7 +96,9 @@ class _QuizDetailScreenState extends State<QuizDetailScreen> {
       context: context,
       barrierDismissible: false,
       builder: (BuildContext context) {
+        final isDark = Provider.of<ThemeProvider>(context, listen: false).isDarkMode; // <-- Cek tema dialog
         return Dialog(
+          backgroundColor: isDark ? const Color(0xFF1E293B) : Colors.white, // <-- Background dialog dinamis
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
           child: Padding(
             padding: const EdgeInsets.all(28.0),
@@ -108,11 +111,11 @@ class _QuizDetailScreenState extends State<QuizDetailScreen> {
                   child: Icon(isLulus ? Icons.emoji_events_rounded : Icons.star_half_rounded, color: iconColor, size: 40),
                 ),
                 const SizedBox(height: 20),
-                Text(pesan, style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Color(0xFF0F172A))),
+                Text(pesan, style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: isDark ? Colors.white : const Color(0xFF0F172A))),
                 const SizedBox(height: 8),
-                Text("Hasil Kuis: $namaKuis", textAlign: TextAlign.center, style: const TextStyle(fontSize: 14, color: Color(0xFF64748B))),
+                Text("Hasil Kuis: $namaKuis", textAlign: TextAlign.center, style: TextStyle(fontSize: 14, color: isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B))),
                 const SizedBox(height: 16),
-                const Text("Skor Kamu:", style: TextStyle(fontSize: 14, color: Color(0xFF475569))),
+                Text("Skor Kamu:", style: TextStyle(fontSize: 14, color: isDark ? const Color(0xFFCBD5E1) : const Color(0xFF475569))),
                 Text("$_score", style: TextStyle(fontSize: 48, fontWeight: FontWeight.w900, color: widget.temaColor)),
                 const SizedBox(height: 28),
                 SizedBox(
@@ -136,6 +139,8 @@ class _QuizDetailScreenState extends State<QuizDetailScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Provider.of<ThemeProvider>(context).isDarkMode; // <-- Panggil tema
+
     return Consumer<CourseProvider>(
       builder: (context, provider, child) {
         
@@ -150,16 +155,16 @@ class _QuizDetailScreenState extends State<QuizDetailScreen> {
         // --- TAMPILAN MENU DAFTAR KUIS ---
         if (_activePaketQuiz == null) {
           return Scaffold(
-            backgroundColor: const Color(0xFFF9FAFC),
+            backgroundColor: isDark ? const Color(0xFF0F172A) : const Color(0xFFF9FAFC), // <-- Latar belakang dinamis
             appBar: AppBar(
               backgroundColor: Colors.transparent, elevation: 0, centerTitle: true,
-              leading: IconButton(icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Color(0xFF1E293B), size: 20), onPressed: () => Navigator.pop(context)),
-              title: Text("Daftar Kuis ${widget.kategori}", style: const TextStyle(color: Color(0xFF1E293B), fontWeight: FontWeight.bold, fontSize: 18)),
+              leading: IconButton(icon: Icon(Icons.arrow_back_ios_new_rounded, color: isDark ? Colors.white : const Color(0xFF1E293B), size: 20), onPressed: () => Navigator.pop(context)),
+              title: Text("Daftar Kuis ${widget.kategori}", style: TextStyle(color: isDark ? Colors.white : const Color(0xFF1E293B), fontWeight: FontWeight.bold, fontSize: 18)),
             ),
             body: provider.isLoading
                 ? Center(child: CircularProgressIndicator(valueColor: AlwaysStoppedAnimation<Color>(widget.temaColor)))
                 : provider.daftarPaketQuiz.isEmpty
-                    ? Center(child: Text("Soal belum tersedia untuk kategori ${widget.kategori}.", style: const TextStyle(color: Color(0xFF64748B), fontSize: 14)))
+                    ? Center(child: Text("Soal belum tersedia untuk kategori ${widget.kategori}.", style: TextStyle(color: isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B), fontSize: 14)))
                     : ListView.builder(
                         padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 12.0),
                         itemCount: provider.daftarPaketQuiz.length,
@@ -171,9 +176,9 @@ class _QuizDetailScreenState extends State<QuizDetailScreen> {
                           return Container(
                             margin: const EdgeInsets.only(bottom: 16),
                             decoration: BoxDecoration(
-                              color: Colors.white,
+                              color: isDark ? const Color(0xFF1E293B) : Colors.white, // <-- Kartu daftar kuis dinamis
                               borderRadius: BorderRadius.circular(16),
-                              boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.04), blurRadius: 10, offset: const Offset(0, 4))],
+                              boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: isDark ? 0.2 : 0.04), blurRadius: 10, offset: const Offset(0, 4))],
                             ),
                             child: Material(
                               color: Colors.transparent,
@@ -205,13 +210,13 @@ class _QuizDetailScreenState extends State<QuizDetailScreen> {
                                         child: Column(
                                           crossAxisAlignment: CrossAxisAlignment.start,
                                           children: [
-                                            Text(namaKuis, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Color(0xFF0F172A))),
+                                            Text(namaKuis, style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: isDark ? Colors.white : const Color(0xFF0F172A))),
                                             const SizedBox(height: 4),
-                                            Text("${soalList.length} Pertanyaan", style: const TextStyle(fontSize: 13, color: Color(0xFF64748B))),
+                                            Text("${soalList.length} Pertanyaan", style: TextStyle(fontSize: 13, color: isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B))),
                                           ],
                                         ),
                                       ),
-                                      const Icon(Icons.arrow_forward_ios_rounded, color: Color(0xFFCBD5E1), size: 16),
+                                      Icon(Icons.arrow_forward_ios_rounded, color: isDark ? const Color(0xFF475569) : const Color(0xFFCBD5E1), size: 16),
                                     ],
                                   ),
                                 ),
@@ -228,12 +233,13 @@ class _QuizDetailScreenState extends State<QuizDetailScreen> {
         
         if (listSoal.isEmpty || _currentIndex >= listSoal.length) {
           return Scaffold(
+            backgroundColor: isDark ? const Color(0xFF0F172A) : const Color(0xFFF9FAFC),
             appBar: AppBar(title: const Text("Kuis")),
             body: Center(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  const Text("Kuis sedang diperbarui oleh Admin."),
+                  Text("Kuis sedang diperbarui oleh Admin.", style: TextStyle(color: isDark ? Colors.white : Colors.black87)),
                   const SizedBox(height: 16),
                   ElevatedButton(onPressed: () => setState(() => _activePaketQuiz = null), child: const Text("Kembali")),
                 ],
@@ -245,7 +251,6 @@ class _QuizDetailScreenState extends State<QuizDetailScreen> {
         final soalAktif = listSoal[_currentIndex];
         double progress = (_currentIndex + 1) / listSoal.length;
         
-        // Pengambilan data Text Sempurna (Kebal Error)
         final String teksPertanyaan = _getStringAman(soalAktif['soal'] ?? soalAktif['pertanyaan'], "Pertanyaan kosong");
         
         List<String> opsiJawaban = [];
@@ -263,14 +268,14 @@ class _QuizDetailScreenState extends State<QuizDetailScreen> {
         String labelNamaKuisHeader = _getStringAman(_activePaketQuiz!["nama_kuis"] ?? _activePaketQuiz!["id"], "Kuis");
 
         return Scaffold(
-          backgroundColor: const Color(0xFFF9FAFC),
+          backgroundColor: isDark ? const Color(0xFF0F172A) : const Color(0xFFF9FAFC), // <-- Latar belakang soal dinamis
           appBar: AppBar(
             backgroundColor: Colors.transparent, elevation: 0, centerTitle: true,
             leading: IconButton(
-              icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Color(0xFF1E293B), size: 20),
+              icon: Icon(Icons.arrow_back_ios_new_rounded, color: isDark ? Colors.white : const Color(0xFF1E293B), size: 20),
               onPressed: () => setState(() { _activePaketQuiz = null; _currentIndex = 0; _score = 0; _selectedAnswer = null; }),
             ),
-            title: const Text("Kuis", style: TextStyle(color: Color(0xFF1E293B), fontWeight: FontWeight.bold, fontSize: 18)),
+            title: Text("Kuis", style: TextStyle(color: isDark ? Colors.white : const Color(0xFF1E293B), fontWeight: FontWeight.bold, fontSize: 18)),
           ),
           body: SafeArea(
             child: Padding(
@@ -282,7 +287,10 @@ class _QuizDetailScreenState extends State<QuizDetailScreen> {
                     children: [
                       Container(
                         width: 56, height: 56, padding: const EdgeInsets.all(12),
-                        decoration: BoxDecoration(color: _getLogoBgColor(widget.kategori), borderRadius: BorderRadius.circular(16)),
+                        decoration: BoxDecoration(
+                          color: isDark ? const Color(0xFF1E293B) : _getLogoBgColor(widget.kategori), 
+                          borderRadius: BorderRadius.circular(16)
+                        ),
                         child: Image.asset(_getLogoPath(widget.kategori), fit: BoxFit.contain),
                       ),
                       const SizedBox(width: 16),
@@ -292,21 +300,25 @@ class _QuizDetailScreenState extends State<QuizDetailScreen> {
                           children: [
                             Text("Modul ${widget.kategori}", style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: widget.temaColor, letterSpacing: 0.5)),
                             const SizedBox(height: 4),
-                            Text(labelNamaKuisHeader, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color(0xFF0F172A)), maxLines: 2, overflow: TextOverflow.ellipsis),
+                            Text(labelNamaKuisHeader, style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: isDark ? Colors.white : const Color(0xFF0F172A)), maxLines: 2, overflow: TextOverflow.ellipsis),
                           ],
                         ),
                       ),
                     ],
                   ),
                   const SizedBox(height: 24),
-                  Text("Pertanyaan ${_currentIndex + 1} dari ${listSoal.length}", style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Color(0xFF64748B))),
+                  Text("Pertanyaan ${_currentIndex + 1} dari ${listSoal.length}", style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B))),
                   const SizedBox(height: 12),
-                  LinearProgressIndicator(value: progress, backgroundColor: const Color(0xFFE2E8F0), color: widget.temaColor, minHeight: 8, borderRadius: BorderRadius.circular(10)),
+                  LinearProgressIndicator(value: progress, backgroundColor: isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0), color: widget.temaColor, minHeight: 8, borderRadius: BorderRadius.circular(10)),
                   const SizedBox(height: 30),
                   Container(
                     width: double.infinity, padding: const EdgeInsets.all(20),
-                    decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(16), boxShadow: const [BoxShadow(color: Color(0x0A000000), blurRadius: 12, offset: Offset(0, 6))]),
-                    child: Text(teksPertanyaan, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: Color(0xFF0F172A), height: 1.5), textAlign: TextAlign.center),
+                    decoration: BoxDecoration(
+                      color: isDark ? const Color(0xFF1E293B) : Colors.white, // <-- Kotak pertanyaan dinamis
+                      borderRadius: BorderRadius.circular(16), 
+                      boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: isDark ? 0.2 : 0.04), blurRadius: 12, offset: const Offset(0, 6))]
+                    ),
+                    child: Text(teksPertanyaan, style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: isDark ? Colors.white : const Color(0xFF0F172A), height: 1.5), textAlign: TextAlign.center),
                   ),
                   const SizedBox(height: 30),
                   Expanded(
@@ -320,19 +332,36 @@ class _QuizDetailScreenState extends State<QuizDetailScreen> {
                             margin: const EdgeInsets.only(bottom: 16),
                             padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
                             decoration: BoxDecoration(
-                              color: isSelected ? widget.temaColor.withValues(alpha: 0.1) : Colors.white,
+                              // <-- Kotak opsi jawaban dinamis
+                              color: isSelected ? widget.temaColor.withValues(alpha: 0.15) : (isDark ? const Color(0xFF1E293B) : Colors.white),
                               borderRadius: BorderRadius.circular(14),
-                              border: Border.all(color: isSelected ? widget.temaColor : const Color(0xFFE2E8F0), width: isSelected ? 2 : 1.5),
+                              border: Border.all(
+                                color: isSelected ? widget.temaColor : (isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0)), 
+                                width: isSelected ? 2 : 1.5
+                              ),
                             ),
                             child: Row(
                               children: [
                                 Container(
                                   width: 24, height: 24,
-                                  decoration: BoxDecoration(shape: BoxShape.circle, border: Border.all(color: isSelected ? widget.temaColor : const Color(0xFFCBD5E1), width: 2), color: isSelected ? widget.temaColor : Colors.transparent),
+                                  decoration: BoxDecoration(
+                                    shape: BoxShape.circle, 
+                                    border: Border.all(color: isSelected ? widget.temaColor : (isDark ? const Color(0xFF64748B) : const Color(0xFFCBD5E1)), width: 2), 
+                                    color: isSelected ? widget.temaColor : Colors.transparent
+                                  ),
                                   child: isSelected ? const Icon(Icons.check, size: 16, color: Colors.white) : null,
                                 ),
                                 const SizedBox(width: 16),
-                                Expanded(child: Text(opsiTeks, style: TextStyle(fontSize: 15, fontWeight: isSelected ? FontWeight.bold : FontWeight.normal, color: isSelected ? widget.temaColor : const Color(0xFF334155)))),
+                                Expanded(
+                                  child: Text(
+                                    opsiTeks, 
+                                    style: TextStyle(
+                                      fontSize: 15, 
+                                      fontWeight: isSelected ? FontWeight.bold : FontWeight.normal, 
+                                      color: isSelected ? widget.temaColor : (isDark ? const Color(0xFFE2E8F0) : const Color(0xFF334155))
+                                    )
+                                  )
+                                ),
                               ],
                             ),
                           ),
@@ -343,9 +372,13 @@ class _QuizDetailScreenState extends State<QuizDetailScreen> {
                   SizedBox(
                     width: double.infinity, height: 52,
                     child: ElevatedButton(
-                      style: ElevatedButton.styleFrom(backgroundColor: _selectedAnswer != null ? widget.temaColor : const Color(0xFFCBD5E1), elevation: 0, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14))),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: _selectedAnswer != null ? widget.temaColor : (isDark ? const Color(0xFF334155) : const Color(0xFFCBD5E1)), 
+                        elevation: 0, 
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14))
+                      ),
                       onPressed: () => _nextQuestion(listSoal),
-                      child: Text(_currentIndex == listSoal.length - 1 ? "Submit Nilai" : "Soal Berikutnya", style: const TextStyle(color: Colors.white, fontSize: 15, fontWeight: FontWeight.bold)),
+                      child: Text(_currentIndex == listSoal.length - 1 ? "Submit Nilai" : "Soal Berikutnya", style: TextStyle(color: _selectedAnswer != null ? Colors.white : Colors.grey[400], fontSize: 15, fontWeight: FontWeight.bold)),
                     ),
                   ),
                 ],

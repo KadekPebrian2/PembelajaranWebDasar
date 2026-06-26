@@ -5,6 +5,7 @@ import 'register_screen.dart';
 import '../main_screen.dart';
 import '../admin/admin_dashboard.dart';
 import '../../providers/auth_provider.dart'; 
+import '../../providers/theme_provider.dart'; // <-- 1. Tambah pemanggil tema
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({Key? key}) : super(key: key);
@@ -28,13 +29,15 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     const primaryPurple = Color(0xFF8200E6);
+    final isDark = Provider.of<ThemeProvider>(context).isDarkMode; // <-- 2. Cek tema aktif
 
     return Scaffold(
-      backgroundColor: Colors.white,
+      // <-- 3. Latar belakang dinamis (Gelap malam / Putih bersih)
+      backgroundColor: isDark ? const Color(0xFF0F172A) : Colors.white,
       body: SingleChildScrollView(
         child: Column(
           children: [
-            // Header Ungu
+            // Header Ungu (100% Tidak Diubah)
             Container(
               width: double.infinity,
               decoration: const BoxDecoration(
@@ -101,6 +104,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     hint: "Email",
                     icon: Icons.email_outlined,
                     isPassword: false,
+                    isDark: isDark, // <-- Kirim status tema ke inputan
                   ),
                   const SizedBox(height: 20),
                   _buildTextField(
@@ -108,6 +112,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     hint: "Password",
                     icon: Icons.lock_outline,
                     isPassword: true,
+                    isDark: isDark,
                   ),
                   const SizedBox(height: 40),
 
@@ -138,7 +143,6 @@ class _LoginScreenState extends State<LoginScreen> {
                           _isLoading = true;
                         });
 
-                        // AKSI BARU: Pengecekan Login Melalui Server Firebase Auth
                         final authProvider = Provider.of<AuthProvider>(context, listen: false);
                         final user = await authProvider.loginWithFirebase(email, password);
 
@@ -149,7 +153,6 @@ class _LoginScreenState extends State<LoginScreen> {
                         if (!mounted) return;
 
                         if (user != null) {
-                          // Logika Cek Role Akun
                           if (user['role'] == 'admin') {
                             Navigator.pushReplacement(
                               context,
@@ -162,7 +165,6 @@ class _LoginScreenState extends State<LoginScreen> {
                             );
                           }
                         } else {
-                          // Jika user gagal/tidak ditemukan di Firebase
                           ScaffoldMessenger.of(context).showSnackBar(
                             const SnackBar(
                               content: Text("Email/Password salah atau koneksi internet terganggu!"),
@@ -189,7 +191,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      const Text("Belum punya akun? ", style: TextStyle(fontSize: 15)),
+                      Text("Belum punya akun? ", style: TextStyle(fontSize: 15, color: isDark ? const Color(0xFF94A3B8) : Colors.black87)), // <-- Warna teks bawah dinamis
                       GestureDetector(
                         onTap: () {
                           Navigator.pushReplacement(
@@ -218,20 +220,22 @@ class _LoginScreenState extends State<LoginScreen> {
     required String hint,
     required IconData icon,
     required bool isPassword,
+    required bool isDark, // <-- Parameter tema baru
   }) {
     return Container(
       decoration: BoxDecoration(
-        color: const Color(0xFFF9FAFB), 
+        color: isDark ? const Color(0xFF1E293B) : const Color(0xFFF9FAFB), // <-- Kotak input dinamis
         borderRadius: BorderRadius.circular(15),
-        border: Border.all(color: Colors.black12), 
+        border: Border.all(color: isDark ? const Color(0xFF334155) : Colors.black12), 
       ),
       child: TextField(
         controller: controller,
         obscureText: isPassword,
+        style: TextStyle(color: isDark ? Colors.white : Colors.black87), // <-- KUNCI: Warna ketikan dinamis
         decoration: InputDecoration(
           hintText: hint,
-          hintStyle: const TextStyle(color: Colors.black38, fontSize: 15),
-          prefixIcon: Icon(icon, color: Colors.black45, size: 24),
+          hintStyle: TextStyle(color: isDark ? const Color(0xFF64748B) : Colors.black38, fontSize: 15),
+          prefixIcon: Icon(icon, color: isDark ? const Color(0xFF94A3B8) : Colors.black45, size: 24),
           border: InputBorder.none,
           contentPadding: const EdgeInsets.symmetric(vertical: 18),
         ),

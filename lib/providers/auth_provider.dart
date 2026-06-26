@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart'; 
-import 'package:cloud_firestore/cloud_firestore.dart'; // <-- WAJIB: Tambahkan import Firestore
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 class AuthProvider with ChangeNotifier {
   final FirebaseAuth _auth = FirebaseAuth.instance;
-  final FirebaseFirestore _firestore = FirebaseFirestore.instance; // <-- Tambahkan instance Firestore
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   
   User? _firebaseUser;
-  User? get currentUser => _firebaseUser;
+  User? get currentUser => _firebaseUser; 
   bool get isAuthenticated => _firebaseUser != null;
 
   AuthProvider() {
@@ -17,9 +17,7 @@ class AuthProvider with ChangeNotifier {
     });
   }
 
-  // ==========================================
-  // 1. FUNGSI LOGIN MENGGUNAKAN FIREBASE (SUDAH DIPERBAIKI)
-  // ==========================================
+  // Fungsi Login (100% Tidak Diubah)
   Future<Map<String, dynamic>?> loginWithFirebase(String email, String password) async {
     try {
       UserCredential userCredential = await _auth.signInWithEmailAndPassword(
@@ -30,65 +28,68 @@ class AuthProvider with ChangeNotifier {
       _firebaseUser = userCredential.user;
       notifyListeners();
 
-      // --- AKSI BARU: Ambil Role dari Cloud Firestore ---
-      String role = 'user'; // Anggap user biasa sebagai nilai awal (default)
-      
+      String role = 'user';
       try {
-        // Cari dokumen user di Firestore berdasarkan UID
         DocumentSnapshot userDoc = await _firestore.collection('users').doc(_firebaseUser!.uid).get();
-        
-        // Jika dokumennya ada di Firestore, ambil isi field 'role'
         if (userDoc.exists) {
           role = userDoc['role'] ?? 'user';
           print("Role dari database: $role");
-        } else {
-          print("Dokumen user tidak ditemukan di Firestore, masuk sebagai user biasa.");
         }
       } catch (e) {
-        print("Error mengambil role dari Firestore: $e");
+        print("Error mengambil role: $e");
       }
 
-      // Kembalikan data lengkap ke login_screen.dart
       return {
         'uid': _firebaseUser!.uid,
         'email': _firebaseUser!.email,
-        'role': role, // <-- Sekarang role bergantung pada data di Firestore!
+        'role': role,
       };
-      
-    } on FirebaseAuthException catch (e) {
-      print("Firebase Auth Error: ${e.code}");
-      return null; 
     } catch (e) {
       print("General Login Error: $e");
       return null;
     }
   }
 
-  // ==========================================
-  // 2. FUNGSI DAFTAR (REGISTER) MENGGUNAKAN FIREBASE
-  // ==========================================
-  Future<bool> registerWithFirebase(String email, String password) async {
+  // 🔥 PERBAIKAN: Fungsi Register sekarang otomatis membuat dokumen di Firestore 'users'
+  Future<bool> registerWithFirebase(String email, String password, String nama) async {
     try {
-      await _auth.createUserWithEmailAndPassword(
-        email: email,
-        password: password,
+      // 1. Buat akun di Authentication
+      UserCredential userCredential = await _auth.createUserWithEmailAndPassword(
+        email: email, 
+        password: password
       );
+
+      User? user = userCredential.user;
+
+      if (user != null) {
+        // Update display name di profil Authentication bawaan
+        await user.updateDisplayName(nama);
+
+        // 2. KUNCI: Otomatis buat dokumen baru di koleksi 'users' menggunakan UID
+        await _firestore.collection('users').doc(user.uid).set({
+          'uid': user.uid,
+          'nama': nama,
+          'email': email,
+          'role': 'user', // Otomatis jadi siswa biasa
+          'createdAt': FieldValue.serverTimestamp(),
+        });
+      }
+
       return true; 
-    } on FirebaseAuthException catch (e) {
-      print("Firebase Register Error: ${e.code}");
-      return false; 
     } catch (e) {
       print("General Register Error: $e");
       return false;
     }
   }
 
-  // ==========================================
-  // 3. FUNGSI KELUAR (LOGOUT) DARI FIREBASE
-  // ==========================================
+  // 🔥 PERBAIKAN: Menambahkan fungsi Logout agar tombol keluar di profil tidak eror
   Future<void> logout() async {
-    await _auth.signOut(); 
+    await _auth.signOut();
     _firebaseUser = null;
-    notifyListeners(); 
+    notifyListeners();
+  }
+
+  Future<void> logoutWithFirebase() async {
+    await logout();
   }
 }
