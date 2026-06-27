@@ -20,8 +20,20 @@ class _ManageMateriScreenState extends State<ManageMateriScreen> {
     selectedCategory = widget.kategoriTerpilih ?? 'HTML';
   }
 
+  // 🛠️ FUNGSI BARU: Normalisasi kategori agar selalu pas menembak dokumen Kapital (HTML, CSS, JS)
+  String _getNormalizedDocId() {
+    String kategori = selectedCategory.trim().toUpperCase();
+    if (kategori == "JAVASCRIPT") {
+      return "JS";
+    }
+    return kategori;
+  }
+
   @override
   Widget build(BuildContext context) {
+    // Dapatkan ID dokumen yang sudah bersih dan terstandardisasi
+    final String docId = _getNormalizedDocId();
+
     return Scaffold(
       backgroundColor: const Color(0xFFF8F9FA),
       appBar: AppBar(
@@ -59,7 +71,8 @@ class _ManageMateriScreenState extends State<ManageMateriScreen> {
           ),
           Expanded(
             child: StreamBuilder<DocumentSnapshot>(
-              stream: FirebaseFirestore.instance.collection('courses').doc(selectedCategory).snapshots(),
+              // 🛠️ PERBAIKAN 1: Pipa Stream sekarang mendengarkan dokumen Kapital yang Valid (docId)
+              stream: FirebaseFirestore.instance.collection('courses').doc(docId).snapshots(),
               builder: (context, snapshot) {
                 if (snapshot.connectionState == ConnectionState.waiting) {
                   return const Center(child: CircularProgressIndicator(color: Color(0xFF6B11D6)));
@@ -159,7 +172,10 @@ class _ManageMateriScreenState extends State<ManageMateriScreen> {
     if (confirm != true) return;
 
     try {
-      await FirebaseFirestore.instance.collection('courses').doc(selectedCategory).update({
+      final String docId = _getNormalizedDocId();
+      
+      // 🛠️ PERBAIKAN 2: Proses hapus array juga diarahkan ke dokumen Kapital (docId)
+      await FirebaseFirestore.instance.collection('courses').doc(docId).update({
         'daftar_bab': FieldValue.arrayRemove([materiData])
       });
       if (mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Materi berhasil dihapus!')));

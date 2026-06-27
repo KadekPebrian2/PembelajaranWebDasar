@@ -44,33 +44,36 @@ class CourseProvider with ChangeNotifier {
 
     _quizSubscription?.cancel();
 
-    _quizSubscription = _firestore.collection('kuis').snapshots().listen((snapshot) {
+    _quizSubscription =
+        _firestore.collection('kuis').snapshots().listen((snapshot) {
       _daftarPaketQuiz = [];
       String targetKategori = kategori.toUpperCase().trim();
-      
+
       for (var doc in snapshot.docs) {
         String docId = doc.id.toUpperCase().trim();
-        
+
         // Cari dokumen kategori yang cocok (Misal: HTML)
         if (docId == targetKategori) {
           Map<String, dynamic> docData = doc.data();
-          
+
           // AMBIL DARI FIELD 'daftar_paket' SESUAI KODE ADMIN
           if (docData['daftar_paket'] is List) {
             List<dynamic> listPaketDariAdmin = docData['daftar_paket'];
-            
+
             for (int i = 0; i < listPaketDariAdmin.length; i++) {
               var paket = listPaketDariAdmin[i];
               if (paket is Map<String, dynamic>) {
-                
                 // Format agar UI User mengenali strukturnya dengan pas
                 _daftarPaketQuiz.add({
-                  'id': '${doc.id}_$i', // ID Unik gabungan kategori dan index paket
+                  'id':
+                      '${doc.id}_$i', // ID Unik gabungan kategori dan index paket
                   'nama_kuis': paket['judul_paket'] ?? 'Kuis ${i + 1}',
-                  'soal_list': paket['pertanyaan'] is List ? paket['pertanyaan'] : [],
+                  'soal_list':
+                      paket['pertanyaan'] is List ? paket['pertanyaan'] : [],
                 });
-                
-                debugPrint("🎯 Paket Terbaca Sempurna: ${paket['judul_paket']} berisi ${(paket['pertanyaan'] as List).length} soal");
+
+                debugPrint(
+                    "🎯 Paket Terbaca Sempurna: ${paket['judul_paket']} berisi ${(paket['pertanyaan'] as List).length} soal");
               }
             }
           }
@@ -83,9 +86,10 @@ class CourseProvider with ChangeNotifier {
           if (doc.id.toUpperCase().trim() == targetKategori) {
             Map<String, dynamic> data = doc.data();
             List<dynamic> qs = [];
-            if (data['pertanyaan'] is List) qs = data['pertanyaan'];
+            if (data['pertanyaan'] is List)
+              qs = data['pertanyaan'];
             else if (data['soal_list'] is List) qs = data['soal_list'];
-            
+
             if (qs.isNotEmpty) {
               _daftarPaketQuiz.add({
                 'id': doc.id,
@@ -106,7 +110,8 @@ class CourseProvider with ChangeNotifier {
     });
   }
 
-  Future<void> addSoalKuis(String namaKuis, String kategori, List<dynamic> soalList) async {
+  Future<void> addSoalKuis(
+      String namaKuis, String kategori, List<dynamic> soalList) async {
     try {
       await _firestore.collection('kuis').doc(kategori).set({
         "id": kategori,
@@ -114,7 +119,9 @@ class CourseProvider with ChangeNotifier {
         "kategori": kategori,
         "soal_list": List.from(soalList, growable: true),
       }, SetOptions(merge: true));
-    } catch (e) { rethrow; }
+    } catch (e) {
+      rethrow;
+    }
   }
 
   Future<void> updateSoalKuis(String docId, List<dynamic> soalBaru) async {
@@ -122,7 +129,9 @@ class CourseProvider with ChangeNotifier {
       await _firestore.collection('kuis').doc(docId).update({
         "soal_list": List.from(soalBaru, growable: true),
       });
-    } catch (e) { rethrow; }
+    } catch (e) {
+      rethrow;
+    }
   }
 
   // ==========================================
@@ -133,17 +142,35 @@ class CourseProvider with ChangeNotifier {
     notifyListeners();
 
     _materiSubscription?.cancel();
-    _materiSubscription = _firestore.collection('courses').doc(kategori).snapshots().listen((doc) {
+
+    // Menormalisasi kategori input menjadi huruf besar semua (HTML, CSS, JS)
+    String targetKategori = kategori.toUpperCase().trim();
+
+    _materiSubscription = _firestore
+        .collection('courses')
+        .doc(targetKategori)
+        .snapshots()
+        .listen((doc) {
       _daftarMateri = [];
+
       if (doc.exists && doc.data() != null) {
         Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
+
+        // 🌟 KODE BERSIH: Hanya membaca satu field konsisten 'daftar_bab'
         if (data["daftar_bab"] != null && data["daftar_bab"] is List) {
           _daftarMateri = List<Map<String, dynamic>>.from(data["daftar_bab"]);
-        } else if (data["bab"] != null && data["bab"] is List) {
-          _daftarMateri = List<Map<String, dynamic>>.from(data["bab"]);
+          debugPrint(
+              "🚀 [Materi] Berhasil memuat ${_daftarMateri.length} Bab secara live untuk $targetKategori");
         }
+      } else {
+        debugPrint("⚠️ Dokumen materi '$targetKategori' tidak ditemukan.");
       }
+
       _isLoading = false;
+      notifyListeners();
+    }, onError: (e) {
+      _isLoading = false;
+      debugPrint("❌ Error Materi Real-time: $e");
       notifyListeners();
     });
   }
@@ -153,6 +180,8 @@ class CourseProvider with ChangeNotifier {
       await _firestore.collection('courses').doc(kategori).set({
         "daftar_bab": List.from(babBaru, growable: true),
       }, SetOptions(merge: true));
-    } catch (e) { rethrow; }
+    } catch (e) {
+      rethrow;
+    }
   }
 }

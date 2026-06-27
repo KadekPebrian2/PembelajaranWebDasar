@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../../providers/course_provider.dart'; 
-import '../../providers/theme_provider.dart'; // <-- 1. Tambah pemanggil tema
+import '../../providers/course_provider.dart';
+import '../../providers/theme_provider.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import '../../providers/auth_provider.dart';
 
 class MateriDetailScreen extends StatefulWidget {
   final String kategori; // HTML, CSS, atau JS
@@ -24,8 +26,12 @@ class _MateriDetailScreenState extends State<MateriDetailScreen> {
   @override
   void initState() {
     super.initState();
+    
+    // 🛠️ PERBAIKAN UTAMA: Normalisasi singkatan kategori agar sinkron dengan ID dokumen di Firebase
+    String kategoriNormal = widget.kategori.toUpperCase().trim();
+    
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      Provider.of<CourseProvider>(context, listen: false).fetchMateri(widget.kategori);
+      Provider.of<CourseProvider>(context, listen: false).fetchMateri(kategoriNormal);
     });
   }
 
@@ -391,7 +397,7 @@ class _BacaMateriScreenState extends State<BacaMateriScreen> {
                   );
                 }
 
-                if (type == 'tip') {
+                if (type == 'note' || type == 'tip') {
                   return Container(
                     margin: const EdgeInsets.symmetric(vertical: 12),
                     padding: const EdgeInsets.all(16),
@@ -430,9 +436,9 @@ class _BacaMateriScreenState extends State<BacaMateriScreen> {
                       scrollDirection: Axis.horizontal,
                       child: Text(
                         formattedValue,
-                        style: TextStyle(
+                        style: const TextStyle(
                           fontFamily: 'monospace',
-                          color: isDark ? const Color(0xFFE2E8F0) : const Color(0xFF334155),
+                          color: Color(0xFF3B82F6),
                           fontSize: 13,
                           fontWeight: FontWeight.w500,
                         ),

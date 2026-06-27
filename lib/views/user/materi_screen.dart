@@ -7,7 +7,6 @@ class MateriScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      // 🔥 OTOMATIS: Mengikuti background scaffold tema aktif
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 20.0),
@@ -19,7 +18,7 @@ class MateriScreen extends StatelessWidget {
                 style: TextStyle(
                   fontSize: 24,
                   fontWeight: FontWeight.bold,
-                  color: Theme.of(context).textTheme.bodyLarge?.color, // Teks dinamis
+                  color: Theme.of(context).textTheme.bodyLarge?.color,
                 ),
               ),
               const SizedBox(height: 25),
@@ -75,7 +74,8 @@ class MateriScreen extends StatelessWidget {
                     context,
                     MaterialPageRoute(
                       builder: (_) => const MateriDetailScreen(
-                        kategori: "JS",
+                        // 🛠️ DISERAGAMKAN: Mengirim "JS" agar sama dengan modul kuis yang sudah berhasil
+                        kategori: "JS", 
                         temaColor: Color(0xFFFFB300),
                       ),
                     ),
@@ -101,7 +101,7 @@ class MateriScreen extends StatelessWidget {
 
     return Container(
       decoration: BoxDecoration(
-        color: Theme.of(context).cardColor, // Kartu gelap/terang otomatis
+        color: Theme.of(context).cardColor,
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(

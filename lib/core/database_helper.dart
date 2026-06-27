@@ -1,285 +1,285 @@
-import 'package:sqflite/sqflite.dart';
-import 'package:path/path.dart';
-import '../models/weblearn_models.dart';
+// import 'package:sqflite/sqflite.dart';
+// import 'package:path/path.dart';
+// import '../models/weblearn_models.dart';
 
-class DatabaseHelper {
-  static final DatabaseHelper instance = DatabaseHelper._init();
-  static Database? _database;
+// class DatabaseHelper {
+//   static final DatabaseHelper instance = DatabaseHelper._init();
+//   static Database? _database;
 
-  DatabaseHelper._init();
+//   DatabaseHelper._init();
 
-  Future<Database> get database async {
-    if (_database != null) return _database!;
-    _database = await _initDB('weblearn.db');
-    return _database!;
-  }
+//   Future<Database> get database async {
+//     if (_database != null) return _database!;
+//     _database = await _initDB('weblearn.db');
+//     return _database!;
+//   }
 
-  Future<Database> _initDB(String filePath) async {
-    final dbPath = await getDatabasesPath();
-    final path = join(dbPath, filePath);
-    return await openDatabase(path, version: 1, onCreate: _createDB);
-  }
+//   Future<Database> _initDB(String filePath) async {
+//     final dbPath = await getDatabasesPath();
+//     final path = join(dbPath, filePath);
+//     return await openDatabase(path, version: 1, onCreate: _createDB);
+//   }
 
-  Future _createDB(Database db, int version) async {
-    // 0. TABEL USERS (BARU: Untuk sistem Login & Register)
-    await db.execute('''
-      CREATE TABLE users (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        nama TEXT NOT NULL,
-        email TEXT UNIQUE NOT NULL,
-        password TEXT NOT NULL,
-        role TEXT NOT NULL
-      )
-    ''');
+//   Future _createDB(Database db, int version) async {
+//     // 0. TABEL USERS (BARU: Untuk sistem Login & Register)
+//     await db.execute('''
+//       CREATE TABLE users (
+//         id INTEGER PRIMARY KEY AUTOINCREMENT,
+//         nama TEXT NOT NULL,
+//         email TEXT UNIQUE NOT NULL,
+//         password TEXT NOT NULL,
+//         role TEXT NOT NULL
+//       )
+//     ''');
 
-    // 1. Kategori
-    await db.execute('''
-      CREATE TABLE kategori (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        nama TEXT NOT NULL,
-        deskripsi TEXT
-      )
-    ''');
+//     // 1. Kategori
+//     await db.execute('''
+//       CREATE TABLE kategori (
+//         id INTEGER PRIMARY KEY AUTOINCREMENT,
+//         nama TEXT NOT NULL,
+//         deskripsi TEXT
+//       )
+//     ''');
 
-    // 2. Modul
-    await db.execute('''
-      CREATE TABLE modul (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        kategori_id INTEGER,
-        judul TEXT,
-        order_index INTEGER,
-        FOREIGN KEY(kategori_id) REFERENCES kategori(id)
-      )
-    ''');
+//     // 2. Modul
+//     await db.execute('''
+//       CREATE TABLE modul (
+//         id INTEGER PRIMARY KEY AUTOINCREMENT,
+//         kategori_id INTEGER,
+//         judul TEXT,
+//         order_index INTEGER,
+//         FOREIGN KEY(kategori_id) REFERENCES kategori(id)
+//       )
+//     ''');
 
-    // 3. Konten
-    await db.execute('''
-      CREATE TABLE konten (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        modul_id INTEGER,
-        penjelasan_materi TEXT,
-        cuplikan_kode TEXT,
-        penjelasan_kode TEXT,
-        FOREIGN KEY(modul_id) REFERENCES modul(id)
-      )
-    ''');
+//     // 3. Konten
+//     await db.execute('''
+//       CREATE TABLE konten (
+//         id INTEGER PRIMARY KEY AUTOINCREMENT,
+//         modul_id INTEGER,
+//         penjelasan_materi TEXT,
+//         cuplikan_kode TEXT,
+//         penjelasan_kode TEXT,
+//         FOREIGN KEY(modul_id) REFERENCES modul(id)
+//       )
+//     ''');
 
-    // 4. Kuis
-    await db.execute('''
-      CREATE TABLE kuis (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        modul_id INTEGER,
-        pertanyaan TEXT,
-        opt_a TEXT,
-        opt_b TEXT,
-        opt_c TEXT,
-        opt_d TEXT,
-        jawaban TEXT,
-        FOREIGN KEY(modul_id) REFERENCES modul(id)
-      )
-    ''');
+//     // 4. Kuis
+//     await db.execute('''
+//       CREATE TABLE kuis (
+//         id INTEGER PRIMARY KEY AUTOINCREMENT,
+//         modul_id INTEGER,
+//         pertanyaan TEXT,
+//         opt_a TEXT,
+//         opt_b TEXT,
+//         opt_c TEXT,
+//         opt_d TEXT,
+//         jawaban TEXT,
+//         FOREIGN KEY(modul_id) REFERENCES modul(id)
+//       )
+//     ''');
 
-    // 5. User Progress
-    await db.execute('''
-      CREATE TABLE user_progress (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        user_id INTEGER,
-        modul_id INTEGER,
-        is_completed INTEGER DEFAULT 0,
-        last_accessed DATETIME,
-        FOREIGN KEY(modul_id) REFERENCES modul(id)
-      )
-    ''');
+//     // 5. User Progress
+//     await db.execute('''
+//       CREATE TABLE user_progress (
+//         id INTEGER PRIMARY KEY AUTOINCREMENT,
+//         user_id INTEGER,
+//         modul_id INTEGER,
+//         is_completed INTEGER DEFAULT 0,
+//         last_accessed DATETIME,
+//         FOREIGN KEY(modul_id) REFERENCES modul(id)
+//       )
+//     ''');
 
-    // Seed Initial Data
-    await _seedData(db);
-  }
+//     // Seed Initial Data
+//     await _seedData(db);
+//   }
 
-  Future _seedData(Database db) async {
-    // --- SEED AKUN DEFAULT ---
-    // Akun khusus Admin
-    await db.insert('users', {
-      'nama': 'Super Admin', 
-      'email': 'admin@admin.com', 
-      'password': 'admin123', 
-      'role': 'admin'
-    });
-    // Akun percobaan User Biasa
-    await db.insert('users', {
-      'nama': 'Mahasiswa Rajin', 
-      'email': 'user@gmail.com', 
-      'password': 'user123', 
-      'role': 'user'
-    });
+//   Future _seedData(Database db) async {
+//     // --- SEED AKUN DEFAULT ---
+//     // Akun khusus Admin
+//     await db.insert('users', {
+//       'nama': 'Super Admin', 
+//       'email': 'admin@admin.com', 
+//       'password': 'admin123', 
+//       'role': 'admin'
+//     });
+//     // Akun percobaan User Biasa
+//     await db.insert('users', {
+//       'nama': 'Mahasiswa Rajin', 
+//       'email': 'user@gmail.com', 
+//       'password': 'user123', 
+//       'role': 'user'
+//     });
 
-    // Kategori
-    await db.insert('kategori', {'nama': 'HTML', 'deskripsi': 'Belajar dasar struktur website'});
-    await db.insert('kategori', {'nama': 'CSS', 'deskripsi': 'Belajar styling dan layouting'});
-    await db.insert('kategori', {'nama': 'JavaScript', 'deskripsi': 'Belajar interaktivitas website'});
+//     // Kategori
+//     await db.insert('kategori', {'nama': 'HTML', 'deskripsi': 'Belajar dasar struktur website'});
+//     await db.insert('kategori', {'nama': 'CSS', 'deskripsi': 'Belajar styling dan layouting'});
+//     await db.insert('kategori', {'nama': 'JavaScript', 'deskripsi': 'Belajar interaktivitas website'});
 
-    // Modul HTML
-    await db.insert('modul', {'kategori_id': 1, 'judul': 'Pengenalan HTML', 'order_index': 1});
-    await db.insert('modul', {'kategori_id': 1, 'judul': 'Struktur HTML', 'order_index': 2});
+//     // Modul HTML
+//     await db.insert('modul', {'kategori_id': 1, 'judul': 'Pengenalan HTML', 'order_index': 1});
+//     await db.insert('modul', {'kategori_id': 1, 'judul': 'Struktur HTML', 'order_index': 2});
 
-    // Konten HTML
-    await db.insert('konten', {
-      'modul_id': 1,
-      'penjelasan_materi': 'HTML (HyperText Markup Language) adalah bahasa standar untuk membuat halaman web.',
-      'cuplikan_kode': '<h1>Hello World</h1>\n<p>Ini paragraf.</p>',
-      'penjelasan_kode': 'Tag h1 digunakan untuk judul utama. Tag p untuk paragraf.'
-    });
+//     // Konten HTML
+//     await db.insert('konten', {
+//       'modul_id': 1,
+//       'penjelasan_materi': 'HTML (HyperText Markup Language) adalah bahasa standar untuk membuat halaman web.',
+//       'cuplikan_kode': '<h1>Hello World</h1>\n<p>Ini paragraf.</p>',
+//       'penjelasan_kode': 'Tag h1 digunakan untuk judul utama. Tag p untuk paragraf.'
+//     });
 
-    // Kuis HTML
-    await db.insert('kuis', {
-      'modul_id': 1,
-      'pertanyaan': 'Apa kepanjangan dari HTML?',
-      'opt_a': 'Hyper Text Markup Language',
-      'opt_b': 'Hyperlinks and Text Markup Language',
-      'opt_c': 'Home Tool Markup Language',
-      'opt_d': 'Hyper Tool Multi Language',
-      'jawaban': 'A'
-    });
-    await db.insert('kuis', {
-      'modul_id': 1,
-      'pertanyaan': 'Tag untuk membuat paragraf adalah?',
-      'opt_a': '<pg>',
-      'opt_b': '<p>',
-      'opt_c': '<para>',
-      'opt_d': '<text>',
-      'jawaban': 'B'
-    });
-  }
+//     // Kuis HTML
+//     await db.insert('kuis', {
+//       'modul_id': 1,
+//       'pertanyaan': 'Apa kepanjangan dari HTML?',
+//       'opt_a': 'Hyper Text Markup Language',
+//       'opt_b': 'Hyperlinks and Text Markup Language',
+//       'opt_c': 'Home Tool Markup Language',
+//       'opt_d': 'Hyper Tool Multi Language',
+//       'jawaban': 'A'
+//     });
+//     await db.insert('kuis', {
+//       'modul_id': 1,
+//       'pertanyaan': 'Tag untuk membuat paragraf adalah?',
+//       'opt_a': '<pg>',
+//       'opt_b': '<p>',
+//       'opt_c': '<para>',
+//       'opt_d': '<text>',
+//       'jawaban': 'B'
+//     });
+//   }
 
-  // ==========================================
-  // ==========================================
-  // FUNGSI CRUD KATEGORI / MODUL / KONTEN / KUIS
-  // ==========================================
+//   // ==========================================
+//   // ==========================================
+//   // FUNGSI CRUD KATEGORI / MODUL / KONTEN / KUIS
+//   // ==========================================
 
-  Future<int> insertKategori(Map<String, dynamic> values) async {
-    final db = await instance.database;
-    return await db.insert('kategori', values);
-  }
+//   Future<int> insertKategori(Map<String, dynamic> values) async {
+//     final db = await instance.database;
+//     return await db.insert('kategori', values);
+//   }
 
-  Future<List<Kategori>> getKategori() async {
-    final db = await instance.database;
-    final res = await db.query('kategori');
-    return res.map((json) => Kategori.fromMap(json)).toList();
-  }
+//   Future<List<Kategori>> getKategori() async {
+//     final db = await instance.database;
+//     final res = await db.query('kategori');
+//     return res.map((json) => Kategori.fromMap(json)).toList();
+//   }
 
-  Future<int> insertModul(Map<String, dynamic> values) async {
-    final db = await instance.database;
-    return await db.insert('modul', values);
-  }
+//   Future<int> insertModul(Map<String, dynamic> values) async {
+//     final db = await instance.database;
+//     return await db.insert('modul', values);
+//   }
 
-  Future<List<Modul>> getModulByKategori(int kategoriId) async {
-    final db = await instance.database;
-    final res = await db.query('modul', where: 'kategori_id = ?', whereArgs: [kategoriId], orderBy: 'order_index ASC');
-    return res.map((json) => Modul.fromMap(json)).toList();
-  }
+//   Future<List<Modul>> getModulByKategori(int kategoriId) async {
+//     final db = await instance.database;
+//     final res = await db.query('modul', where: 'kategori_id = ?', whereArgs: [kategoriId], orderBy: 'order_index ASC');
+//     return res.map((json) => Modul.fromMap(json)).toList();
+//   }
 
-  Future<int> updateModul(int id, Map<String, dynamic> values) async {
-    final db = await instance.database;
-    return await db.update('modul', values, where: 'id = ?', whereArgs: [id]);
-  }
+//   Future<int> updateModul(int id, Map<String, dynamic> values) async {
+//     final db = await instance.database;
+//     return await db.update('modul', values, where: 'id = ?', whereArgs: [id]);
+//   }
 
-  Future<int> deleteModul(int id) async {
-    final db = await instance.database;
-    return await db.delete('modul', where: 'id = ?', whereArgs: [id]);
-  }
+//   Future<int> deleteModul(int id) async {
+//     final db = await instance.database;
+//     return await db.delete('modul', where: 'id = ?', whereArgs: [id]);
+//   }
 
-  Future<int> insertKonten(Map<String, dynamic> values) async {
-    final db = await instance.database;
-    return await db.insert('konten', values);
-  }
+//   Future<int> insertKonten(Map<String, dynamic> values) async {
+//     final db = await instance.database;
+//     return await db.insert('konten', values);
+//   }
 
-  Future<int> updateKonten(int id, Map<String, dynamic> values) async {
-    final db = await instance.database;
-    return await db.update('konten', values, where: 'id = ?', whereArgs: [id]);
-  }
+//   Future<int> updateKonten(int id, Map<String, dynamic> values) async {
+//     final db = await instance.database;
+//     return await db.update('konten', values, where: 'id = ?', whereArgs: [id]);
+//   }
 
-  Future<int> deleteKonten(int id) async {
-    final db = await instance.database;
-    return await db.delete('konten', where: 'id = ?', whereArgs: [id]);
-  }
+//   Future<int> deleteKonten(int id) async {
+//     final db = await instance.database;
+//     return await db.delete('konten', where: 'id = ?', whereArgs: [id]);
+//   }
 
-  Future<int> insertKuis(Map<String, dynamic> values) async {
-    final db = await instance.database;
-    return await db.insert('kuis', values);
-  }
+//   Future<int> insertKuis(Map<String, dynamic> values) async {
+//     final db = await instance.database;
+//     return await db.insert('kuis', values);
+//   }
 
-  Future<List<Kuis>> getKuisByModul(int modulId) async {
-    final db = await instance.database;
-    final res = await db.query('kuis', where: 'modul_id = ?', whereArgs: [modulId]);
-    return res.map((json) => Kuis.fromMap(json)).toList();
-  }
+//   Future<List<Kuis>> getKuisByModul(int modulId) async {
+//     final db = await instance.database;
+//     final res = await db.query('kuis', where: 'modul_id = ?', whereArgs: [modulId]);
+//     return res.map((json) => Kuis.fromMap(json)).toList();
+//   }
 
-  Future<Kategori?> getKategoriByName(String name) async {
-    final db = await instance.database;
-    final result = await db.query('kategori', where: 'nama = ?', whereArgs: [name]);
-    if (result.isNotEmpty) return Kategori.fromMap(result.first);
-    return null;
-  }
+//   Future<Kategori?> getKategoriByName(String name) async {
+//     final db = await instance.database;
+//     final result = await db.query('kategori', where: 'nama = ?', whereArgs: [name]);
+//     if (result.isNotEmpty) return Kategori.fromMap(result.first);
+//     return null;
+//   }
 
-  Future<Konten?> getKontenByModul(int modulId) async {
-    final db = await instance.database;
-    final result = await db.query('konten', where: 'modul_id = ?', whereArgs: [modulId]);
-    if (result.isNotEmpty) return Konten.fromMap(result.first);
-    return null;
-  }
+//   Future<Konten?> getKontenByModul(int modulId) async {
+//     final db = await instance.database;
+//     final result = await db.query('konten', where: 'modul_id = ?', whereArgs: [modulId]);
+//     if (result.isNotEmpty) return Konten.fromMap(result.first);
+//     return null;
+//   }
 
-  Future<int> deleteKuisByModul(int modulId) async {
-    final db = await instance.database;
-    return await db.delete('kuis', where: 'modul_id = ?', whereArgs: [modulId]);
-  }
+//   Future<int> deleteKuisByModul(int modulId) async {
+//     final db = await instance.database;
+//     return await db.delete('kuis', where: 'modul_id = ?', whereArgs: [modulId]);
+//   }
 
-  Future<int> deleteKontenByModul(int modulId) async {
-    final db = await instance.database;
-    return await db.delete('konten', where: 'modul_id = ?', whereArgs: [modulId]);
-  }
+//   Future<int> deleteKontenByModul(int modulId) async {
+//     final db = await instance.database;
+//     return await db.delete('konten', where: 'modul_id = ?', whereArgs: [modulId]);
+//   }
 
-  Future<int> getModulCountByKategori(int kategoriId) async {
-    final db = await instance.database;
-    final result = await db.rawQuery('SELECT COUNT(*) AS count FROM modul WHERE kategori_id = ?', [kategoriId]);
-    return Sqflite.firstIntValue(result) ?? 0;
-  }
+//   Future<int> getModulCountByKategori(int kategoriId) async {
+//     final db = await instance.database;
+//     final result = await db.rawQuery('SELECT COUNT(*) AS count FROM modul WHERE kategori_id = ?', [kategoriId]);
+//     return Sqflite.firstIntValue(result) ?? 0;
+//   }
 
-  Future<int> updateKuis(int id, Map<String, dynamic> values) async {
-    final db = await instance.database;
-    return await db.update('kuis', values, where: 'id = ?', whereArgs: [id]);
-  }
+//   Future<int> updateKuis(int id, Map<String, dynamic> values) async {
+//     final db = await instance.database;
+//     return await db.update('kuis', values, where: 'id = ?', whereArgs: [id]);
+//   }
 
-  Future<int> deleteKuis(int id) async {
-    final db = await instance.database;
-    return await db.delete('kuis', where: 'id = ?', whereArgs: [id]);
-  }
+//   Future<int> deleteKuis(int id) async {
+//     final db = await instance.database;
+//     return await db.delete('kuis', where: 'id = ?', whereArgs: [id]);
+//   }
 
-  // FUNGSI AUTHENTICATION (LOGIN & REGISTER)
-  // ==========================================
+//   // FUNGSI AUTHENTICATION (LOGIN & REGISTER)
+//   // ==========================================
 
-  // Fungsi untuk mengecek login
-  Future<Map<String, dynamic>?> loginUser(String email, String password) async {
-    final db = await instance.database;
-    final result = await db.query(
-      'users',
-      where: 'email = ? AND password = ?',
-      whereArgs: [email, password],
-    );
+//   // Fungsi untuk mengecek login
+//   Future<Map<String, dynamic>?> loginUser(String email, String password) async {
+//     final db = await instance.database;
+//     final result = await db.query(
+//       'users',
+//       where: 'email = ? AND password = ?',
+//       whereArgs: [email, password],
+//     );
 
-    // Jika data ditemukan, kembalikan baris pertama (akunnya)
-    if (result.isNotEmpty) {
-      return result.first;
-    }
-    return null; // Jika salah/tidak ditemukan
-  }
+//     // Jika data ditemukan, kembalikan baris pertama (akunnya)
+//     if (result.isNotEmpty) {
+//       return result.first;
+//     }
+//     return null; // Jika salah/tidak ditemukan
+//   }
 
-  // Fungsi untuk mendaftarkan user baru (Sign Up)
-  Future<int> registerUser(String nama, String email, String password) async {
-    final db = await instance.database;
-    return await db.insert('users', {
-      'nama': nama,
-      'email': email,
-      'password': password,
-      'role': 'user' // Setiap user yang daftar otomatis jadi 'user' biasa
-    });
-  }
-}
+//   // Fungsi untuk mendaftarkan user baru (Sign Up)
+//   Future<int> registerUser(String nama, String email, String password) async {
+//     final db = await instance.database;
+//     return await db.insert('users', {
+//       'nama': nama,
+//       'email': email,
+//       'password': password,
+//       'role': 'user' // Setiap user yang daftar otomatis jadi 'user' biasa
+//     });
+//   }
+// }

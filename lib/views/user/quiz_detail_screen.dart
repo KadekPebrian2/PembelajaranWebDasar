@@ -28,9 +28,15 @@ class _QuizDetailScreenState extends State<QuizDetailScreen> {
   @override
   void initState() {
     super.initState();
+    // 🛠️ PERBAIKAN 1: Normalisasi nama kategori "JS" menjadi "JAVASCRIPT" agar sinkron dengan dokumen Firestore Admin
+    String kategoriNormal = widget.kategori.toUpperCase().trim();
+    if (kategoriNormal == "JS") {
+      kategoriNormal = "JAVASCRIPT";
+    }
+
     WidgetsBinding.instance.addPostFrameCallback((_) {
       Provider.of<CourseProvider>(context, listen: false)
-          .fetchPaketKuis(widget.kategori);
+          .fetchPaketKuis(kategoriNormal);
     });
   }
 
@@ -48,6 +54,7 @@ class _QuizDetailScreenState extends State<QuizDetailScreen> {
       case 'CSS':
         return 'assets/images/css_logo.png';
       case 'JS':
+      case 'JAVASCRIPT':
         return 'assets/images/js_logo.png';
       default:
         return 'assets/images/html_logo.png';
@@ -61,6 +68,7 @@ class _QuizDetailScreenState extends State<QuizDetailScreen> {
       case 'CSS':
         return const Color(0xFFEBF4FF);
       case 'JS':
+      case 'JAVASCRIPT':
         return const Color(0xFFFFF7E5);
       default:
         return const Color(0xFFFFF0E5);
@@ -100,7 +108,6 @@ class _QuizDetailScreenState extends State<QuizDetailScreen> {
     }
   }
 
-  // 🔥 PERBAIKAN: Ditambahkan kata kunci 'async' di bawah ini agar 'await' bisa berjalan
   void _showResultDialog() async {
     bool isLulus = _score >= 70;
     String pesan = isLulus ? "Luar Biasa! 🎉" : "Tetap Semangat! 💪";
@@ -117,7 +124,7 @@ class _QuizDetailScreenState extends State<QuizDetailScreen> {
     try {
       await FirebaseFirestore.instance.collection('user_results').add({
         'email': currentUserEmail,
-        'kategori': widget.kategori,
+        'kategori': widget.kategori.toUpperCase(),
         'nama_kuis': namaKuis,
         'skor': _score,
         'timestamp': FieldValue.serverTimestamp(),
@@ -134,11 +141,9 @@ class _QuizDetailScreenState extends State<QuizDetailScreen> {
       barrierDismissible: false,
       builder: (BuildContext context) {
         final isDark = Provider.of<ThemeProvider>(context, listen: false)
-            .isDarkMode; // <-- Cek tema dialog
+            .isDarkMode;
         return Dialog(
-          backgroundColor: isDark
-              ? const Color(0xFF1E293B)
-              : Colors.white, // <-- Background dialog dinamis
+          backgroundColor: isDark ? const Color(0xFF1E293B) : Colors.white,
           shape:
               RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
           child: Padding(
@@ -221,12 +226,10 @@ class _QuizDetailScreenState extends State<QuizDetailScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final isDark =
-        Provider.of<ThemeProvider>(context).isDarkMode; // <-- Panggil tema
+    final isDark = Provider.of<ThemeProvider>(context).isDarkMode;
 
     return Consumer<CourseProvider>(
       builder: (context, provider, child) {
-        // Mencegah Kuis Tertukar saat Update Realtime
         if (_activePaketQuiz != null && provider.daftarPaketQuiz.isNotEmpty) {
           final matchedQuiz = provider.daftarPaketQuiz
               .where((paket) => paket['id'] == _activePaketQuiz!['id'])
@@ -239,9 +242,7 @@ class _QuizDetailScreenState extends State<QuizDetailScreen> {
         // --- TAMPILAN MENU DAFTAR KUIS ---
         if (_activePaketQuiz == null) {
           return Scaffold(
-            backgroundColor: isDark
-                ? const Color(0xFF0F172A)
-                : const Color(0xFFF9FAFC), // <-- Latar belakang dinamis
+            backgroundColor: isDark ? const Color(0xFF0F172A) : const Color(0xFFF9FAFC),
             appBar: AppBar(
               backgroundColor: Colors.transparent,
               elevation: 0,
@@ -287,10 +288,7 @@ class _QuizDetailScreenState extends State<QuizDetailScreen> {
                           return Container(
                             margin: const EdgeInsets.only(bottom: 16),
                             decoration: BoxDecoration(
-                              color: isDark
-                                  ? const Color(0xFF1E293B)
-                                  : Colors
-                                      .white, // <-- Kartu daftar kuis dinamis
+                              color: isDark ? const Color(0xFF1E293B) : Colors.white,
                               borderRadius: BorderRadius.circular(16),
                               boxShadow: [
                                 BoxShadow(
@@ -435,9 +433,7 @@ class _QuizDetailScreenState extends State<QuizDetailScreen> {
             _activePaketQuiz!["nama_kuis"] ?? _activePaketQuiz!["id"], "Kuis");
 
         return Scaffold(
-          backgroundColor: isDark
-              ? const Color(0xFF0F172A)
-              : const Color(0xFFF9FAFC), // <-- Latar belakang soal dinamis
+          backgroundColor: isDark ? const Color(0xFF0F172A) : const Color(0xFFF9FAFC),
           appBar: AppBar(
             backgroundColor: Colors.transparent,
             elevation: 0,
@@ -510,10 +506,6 @@ class _QuizDetailScreenState extends State<QuizDetailScreen> {
                   Text(
                       "Pertanyaan ${_currentIndex + 1} dari ${listSoal.length}",
                       style: TextStyle(
-                          fontFamily: Theme.of(context)
-                              .textTheme
-                              .bodyMedium
-                              ?.fontFamily,
                           fontSize: 14,
                           fontWeight: FontWeight.bold,
                           color: isDark
@@ -546,8 +538,9 @@ class _QuizDetailScreenState extends State<QuizDetailScreen> {
                         style: TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.w600,
-                            color:
-                                isDark ? Colors.white : const Color(0xFF0F172A),
+                            color: isDark
+                                ? Colors.white
+                                : const Color(0xFF0F172A),
                             height: 1.5),
                         textAlign: TextAlign.center),
                   ),
