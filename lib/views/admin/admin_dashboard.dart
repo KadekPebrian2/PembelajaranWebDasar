@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import '../../providers/auth_provider.dart';
 import '../auth/login_screen.dart';
 
@@ -30,7 +31,8 @@ class _AdminDashboardState extends State<AdminDashboard> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text("Tambah Pembelajaran Baru", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+        title: const Text("Tambah Pembelajaran Baru",
+            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
         content: TextField(
           controller: kategoriController,
           decoration: const InputDecoration(
@@ -45,17 +47,22 @@ class _AdminDashboardState extends State<AdminDashboard> {
             child: const Text("Batal", style: TextStyle(color: Colors.grey)),
           ),
           ElevatedButton(
-            style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF6B11D6)),
+            style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF6B11D6)),
             onPressed: () {
               final namaKategori = kategoriController.text.trim();
               if (namaKategori.isNotEmpty) {
                 Navigator.pop(context);
                 ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text("Kategori '$namaKategori' berhasil dibuat!")),
+                  SnackBar(
+                      content:
+                          Text("Kategori '$namaKategori' berhasil dibuat!")),
                 );
               }
             },
-            child: const Text("Simpan", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+            child: const Text("Simpan",
+                style: TextStyle(
+                    color: Colors.white, fontWeight: FontWeight.bold)),
           ),
         ],
       ),
@@ -69,15 +76,15 @@ class _AdminDashboardState extends State<AdminDashboard> {
       body: IndexedStack(
         index: _currentTabIndex,
         children: [
-          _buildHomeTab(),           
-          _buildSettingsTab(),      
+          _buildHomeTab(),
+          _buildSettingsTab(),
         ],
       ),
       bottomNavigationBar: Container(
         decoration: const BoxDecoration(
           boxShadow: [
             BoxShadow(
-              color: Color(0x08000000), 
+              color: Color(0x08000000),
               blurRadius: 10,
               offset: Offset(0, -2),
             ),
@@ -85,13 +92,15 @@ class _AdminDashboardState extends State<AdminDashboard> {
         ),
         child: BottomNavigationBar(
           currentIndex: _currentTabIndex,
-          selectedItemColor: const Color(0xFF6B11D6), 
+          selectedItemColor: const Color(0xFF6B11D6),
           unselectedItemColor: const Color(0xFF94A3B8),
           type: BottomNavigationBarType.fixed,
           backgroundColor: Colors.white,
           elevation: 0,
-          selectedLabelStyle: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
-          unselectedLabelStyle: const TextStyle(fontWeight: FontWeight.w500, fontSize: 12),
+          selectedLabelStyle:
+              const TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
+          unselectedLabelStyle:
+              const TextStyle(fontWeight: FontWeight.w500, fontSize: 12),
           onTap: (index) {
             setState(() {
               _currentTabIndex = index;
@@ -101,14 +110,18 @@ class _AdminDashboardState extends State<AdminDashboard> {
             BottomNavigationBarItem(
               icon: Padding(
                 padding: const EdgeInsets.all(4.0),
-                child: Icon(_currentTabIndex == 0 ? Icons.home_filled : Icons.home_outlined),
+                child: Icon(_currentTabIndex == 0
+                    ? Icons.home_filled
+                    : Icons.home_outlined),
               ),
               label: 'Home',
             ),
             BottomNavigationBarItem(
               icon: Padding(
                 padding: const EdgeInsets.all(4.0),
-                child: Icon(_currentTabIndex == 1 ? Icons.settings_rounded : Icons.settings_outlined),
+                child: Icon(_currentTabIndex == 1
+                    ? Icons.settings_rounded
+                    : Icons.settings_outlined),
               ),
               label: 'Settings',
             ),
@@ -127,7 +140,10 @@ class _AdminDashboardState extends State<AdminDashboard> {
         scrolledUnderElevation: 0,
         title: const Text(
           "Dashboard Admin",
-          style: TextStyle(color: Color(0xFF0F172A), fontWeight: FontWeight.bold, fontSize: 18),
+          style: TextStyle(
+              color: Color(0xFF0F172A),
+              fontWeight: FontWeight.bold,
+              fontSize: 18),
         ),
         actions: [
           IconButton(
@@ -147,92 +163,145 @@ class _AdminDashboardState extends State<AdminDashboard> {
                 width: double.infinity,
                 padding: const EdgeInsets.all(24.0),
                 decoration: BoxDecoration(
-                  color: const Color(0xFF6B11D6),
-                  borderRadius: BorderRadius.circular(24),
-                  boxShadow: const [
-                    BoxShadow(color: Color(0x266B11D6), blurRadius: 15, offset: Offset(0, 6))
-                  ]
-                ),
+                    color: const Color(0xFF6B11D6),
+                    borderRadius: BorderRadius.circular(24),
+                    boxShadow: const [
+                      BoxShadow(
+                          color: Color(0x266B11D6),
+                          blurRadius: 15,
+                          offset: Offset(0, 6))
+                    ]),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
                     const Text(
                       "Selamat Datang\nAdmin!",
                       textAlign: TextAlign.center,
-                      style: TextStyle(color: Colors.white, fontSize: 26, fontWeight: FontWeight.bold, height: 1.3),
+                      style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 26,
+                          fontWeight: FontWeight.bold,
+                          height: 1.3),
                     ),
                     const SizedBox(height: 12),
                     Text(
                       "Pantau perkembangan pembelajaran dan kelola ekosistem akademik anda dalam satu tampilan dashboard yang terintegrasi.",
                       textAlign: TextAlign.center,
-                      style: TextStyle(color: Colors.white.withAlpha(204), fontSize: 13, height: 1.4),
+                      style: TextStyle(
+                          color: Colors.white.withAlpha(204),
+                          fontSize: 13,
+                          height: 1.4),
                     ),
                   ],
                 ),
               ),
               const SizedBox(height: 24),
-              const Text("Statistik Utama", style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Color(0xFF1E293B))),
+              const Text("Statistik Utama",
+                  style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      color: Color(0xFF1E293B))),
               const SizedBox(height: 12),
-              Container(
-                width: double.infinity,
-                padding: const EdgeInsets.all(20.0),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(20),
-                  boxShadow: const [BoxShadow(color: Color(0x0D000000), blurRadius: 12, offset: Offset(0, 4))],
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Row(
-                          children: [
-                            Container(
-                              padding: const EdgeInsets.all(6),
-                              decoration: BoxDecoration(color: const Color(0xFFEBF4FF), borderRadius: BorderRadius.circular(8)),
-                              child: const Icon(Icons.assignment_turned_in_rounded, color: Color(0xFF2563EB), size: 20),
-                            ),
-                            const SizedBox(width: 12),
-                            const Text("Rata-rata Skor Quiz", style: TextStyle(fontSize: 14, color: Color(0xFF64748B), fontWeight: FontWeight.w500)),
-                          ],
-                        ),
-                        const Text("Stabil", style: TextStyle(color: Color(0xFF2563EB), fontWeight: FontWeight.bold, fontSize: 13)),
+
+              // 🔥 LOGIKA BARU: Perhitungan Rata-Rata Skor Kuis Real-Time Terpusat dari Cloud Firestore
+              StreamBuilder<QuerySnapshot>(
+                stream: FirebaseFirestore.instance.collection('user_results').snapshots(),
+                builder: (context, snapshot) {
+                  double rataRata = 0.0;
+                  String labelPersen = "0.0%";
+
+                  if (snapshot.hasData && snapshot.data!.docs.isNotEmpty) {
+                    final docs = snapshot.data!.docs;
+                    double totalSkor = 0;
+
+                    for (var doc in docs) {
+                      final data = doc.data() as Map<String, dynamic>;
+                      totalSkor += (data['skor'] ?? 0);
+                    }
+
+                    rataRata = totalSkor / docs.length;
+                    labelPersen = "${rataRata.toStringAsFixed(1)}%";
+                  }
+
+                  return Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.all(20.0),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(20),
+                      boxShadow: const [
+                        BoxShadow(
+                            color: Color(0x0D000000),
+                            blurRadius: 12,
+                            offset: Offset(0, 4))
                       ],
                     ),
-                    const SizedBox(height: 16),
-                    const Text("84.2%", style: TextStyle(fontSize: 32, fontWeight: FontWeight.w900, color: Color(0xFF0F172A))),
-                    const SizedBox(height: 12),
-                    LinearProgressIndicator(
-                      value: 0.842,
-                      backgroundColor: const Color(0xFFE2E8F0),
-                      color: const Color(0xFF6B11D6),
-                      minHeight: 6,
-                      borderRadius: BorderRadius.circular(10),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Row(
+                              children: [
+                                Container(
+                                  padding: const EdgeInsets.all(6),
+                                  decoration: BoxDecoration(
+                                      color: const Color(0xFFEBF4FF),
+                                      borderRadius: BorderRadius.circular(8)),
+                                  child: const Icon(
+                                      Icons.assignment_turned_in_rounded,
+                                      color: Color(0xFF2563EB),
+                                      size: 20),
+                                ),
+                                const SizedBox(width: 12),
+                                const Text("Rata-rata Skor Quiz",
+                                    style: TextStyle(
+                                        fontSize: 14,
+                                        color: Color(0xFF64748B),
+                                        fontWeight: FontWeight.w500)),
+                              ],
+                            ),
+                            Text(
+                              rataRata >= 70 ? "Stabil" : "Perlu Evaluasi",
+                              style: TextStyle(
+                                  color: rataRata >= 70 ? const Color(0xFF2563EB) : Colors.orange,
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 13),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 16),
+                        Text(
+                          labelPersen,
+                          style: const TextStyle(
+                              fontSize: 32,
+                              fontWeight: FontWeight.w900,
+                              color: Color(0xFF0F172A)),
+                        ),
+                        const SizedBox(height: 12),
+                        LinearProgressIndicator(
+                          value: rataRata / 100,
+                          backgroundColor: const Color(0xFFE2E8F0),
+                          color: const Color(0xFF6B11D6),
+                          minHeight: 6,
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                      ],
                     ),
-                  ],
-                ),
+                  );
+                },
               ),
+
               const SizedBox(height: 28),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  const Text("Kelola Materi & Kuis", style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Color(0xFF1E293B))),
-                  SizedBox(
-                    height: 34,
-                    child: ElevatedButton.icon(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF6B11D6),
-                        elevation: 0,
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                        padding: const EdgeInsets.symmetric(horizontal: 12),
-                      ),
-                      onPressed: () => _showTambahKategoriDialog(context),
-                      icon: const Icon(Icons.add, color: Colors.white, size: 16),
-                      label: const Text("Tambah Baru", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 12)),
-                    ),
-                  ),
+                  const Text("Kelola Materi & Kuis",
+                      style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          color: Color(0xFF1E293B))),
                 ],
               ),
               const SizedBox(height: 16),
@@ -245,7 +314,11 @@ class _AdminDashboardState extends State<AdminDashboard> {
                 title: "Dasar-Dasar HTML",
                 subtitle: "Kuasai komponen struktural web",
                 onTap: () {
-                  Navigator.push(context, MaterialPageRoute(builder: (_) => const CategoryDetailScreen(judulKategori: "HTML")));
+                  Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (_) => const CategoryDetailScreen(
+                              judulKategori: "HTML")));
                 },
               ),
               const SizedBox(height: 16),
@@ -258,7 +331,11 @@ class _AdminDashboardState extends State<AdminDashboard> {
                 title: "Dasar-Dasar CSS",
                 subtitle: "Kuasai gaya komponen visual web",
                 onTap: () {
-                  Navigator.push(context, MaterialPageRoute(builder: (_) => const CategoryDetailScreen(judulKategori: "CSS")));
+                  Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (_) => const CategoryDetailScreen(
+                              judulKategori: "CSS")));
                 },
               ),
               const SizedBox(height: 16),
@@ -271,7 +348,11 @@ class _AdminDashboardState extends State<AdminDashboard> {
                 title: "Dasar-Dasar JavaScript",
                 subtitle: "Kuasai logika manipulasi web",
                 onTap: () {
-                  Navigator.push(context, MaterialPageRoute(builder: (_) => const CategoryDetailScreen(judulKategori: "JavaScript")));
+                  Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (_) => const CategoryDetailScreen(
+                              judulKategori: "JavaScript")));
                 },
               ),
               const SizedBox(height: 24),
@@ -300,7 +381,10 @@ class _AdminDashboardState extends State<AdminDashboard> {
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(16),
-          boxShadow: const [BoxShadow(color: Color(0x0D000000), blurRadius: 10, offset: Offset(0, 4))],
+          boxShadow: const [
+            BoxShadow(
+                color: Color(0x0D000000), blurRadius: 10, offset: Offset(0, 4))
+          ],
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -309,7 +393,9 @@ class _AdminDashboardState extends State<AdminDashboard> {
               height: 4,
               decoration: BoxDecoration(
                 color: borderColor,
-                borderRadius: const BorderRadius.only(topLeft: Radius.circular(16), topRight: Radius.circular(16)),
+                borderRadius: const BorderRadius.only(
+                    topLeft: Radius.circular(16),
+                    topRight: Radius.circular(16)),
               ),
             ),
             Padding(
@@ -321,25 +407,49 @@ class _AdminDashboardState extends State<AdminDashboard> {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                        decoration: BoxDecoration(color: badgeBg, borderRadius: BorderRadius.circular(8)),
-                        child: Text(kategoriBadge, style: TextStyle(color: badgeText, fontWeight: FontWeight.bold, fontSize: 12)),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 10, vertical: 6),
+                        decoration: BoxDecoration(
+                            color: badgeBg,
+                            borderRadius: BorderRadius.circular(8)),
+                        child: Text(kategoriBadge,
+                            style: TextStyle(
+                                color: badgeText,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 12)),
                       ),
-                      Image.asset(imageAssetPath, width: 28, height: 28, errorBuilder: (context, error, stackTrace) => Icon(Icons.code_rounded, color: badgeText, size: 24)),
+                      Image.asset(imageAssetPath,
+                          width: 28,
+                          height: 28,
+                          errorBuilder: (context, error, stackTrace) => Icon(
+                              Icons.code_rounded,
+                              color: badgeText,
+                              size: 24)),
                     ],
                   ),
                   const SizedBox(height: 14),
-                  Text(title, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Color(0xFF1E293B))),
+                  Text(title,
+                      style: const TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          color: Color(0xFF1E293B))),
                   const SizedBox(height: 4),
-                  Text(subtitle, style: const TextStyle(fontSize: 13, color: Color(0xFF64748B))),
+                  Text(subtitle,
+                      style: const TextStyle(
+                          fontSize: 13, color: Color(0xFF64748B))),
                   const SizedBox(height: 16),
                   Container(height: 1, color: const Color(0xFFF1F5F9)),
                   const SizedBox(height: 14),
                   const Row(
                     children: [
-                      Icon(Icons.arrow_forward_ios_rounded, color: Color(0xFF6B11D6), size: 14),
+                      Icon(Icons.arrow_forward_ios_rounded,
+                          color: Color(0xFF6B11D6), size: 14),
                       SizedBox(width: 8),
-                      Expanded(child: Text("Ketuk untuk membuka edit materi dan kuis", style: TextStyle(fontSize: 13, color: Color(0xFF64748B)))),
+                      Expanded(
+                          child: Text(
+                              "Ketuk untuk membuka edit materi dan kuis",
+                              style: TextStyle(
+                                  fontSize: 13, color: Color(0xFF64748B)))),
                     ],
                   ),
                 ],
@@ -357,15 +467,23 @@ class _AdminDashboardState extends State<AdminDashboard> {
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
-        title: const Text("Pengaturan Sistem", style: TextStyle(color: Color(0xFF0F172A), fontWeight: FontWeight.bold, fontSize: 18)),
+        title: const Text("Pengaturan Sistem",
+            style: TextStyle(
+                color: Color(0xFF0F172A),
+                fontWeight: FontWeight.bold,
+                fontSize: 18)),
       ),
       body: ListView(
         padding: const EdgeInsets.all(24.0),
         children: [
           ListTile(
-            leading: const Icon(Icons.exit_to_app_rounded, color: Colors.redAccent),
-            title: const Text("Logout Akun Admin", style: TextStyle(fontWeight: FontWeight.bold, color: Colors.redAccent)),
-            subtitle: const Text("Keluar dengan aman dari sistem kendali akademik"),
+            leading:
+                const Icon(Icons.exit_to_app_rounded, color: Colors.redAccent),
+            title: const Text("Logout Akun Admin",
+                style: TextStyle(
+                    fontWeight: FontWeight.bold, color: Colors.redAccent)),
+            subtitle:
+                const Text("Keluar dengan aman dari sistem kendali akademik"),
             trailing: const Icon(Icons.arrow_forward_ios_rounded, size: 14),
             onTap: _handleLogout,
           ),
@@ -378,14 +496,19 @@ class _AdminDashboardState extends State<AdminDashboard> {
 class CategoryDetailScreen extends StatelessWidget {
   final String judulKategori;
 
-  const CategoryDetailScreen({Key? key, required this.judulKategori}) : super(key: key);
+  const CategoryDetailScreen({Key? key, required this.judulKategori})
+      : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFF8F9FA),
       appBar: AppBar(
-        title: Text("Detail $judulKategori", style: const TextStyle(color: Color(0xFF1E293B), fontWeight: FontWeight.bold, fontSize: 18)),
+        title: Text("Detail $judulKategori",
+            style: const TextStyle(
+                color: Color(0xFF1E293B),
+                fontWeight: FontWeight.bold,
+                fontSize: 18)),
         backgroundColor: Colors.white,
         foregroundColor: const Color(0xFF1E293B),
         elevation: 0,
@@ -399,15 +522,22 @@ class CategoryDetailScreen extends StatelessWidget {
               Container(
                 width: double.infinity,
                 padding: const EdgeInsets.all(20.0),
-                decoration: BoxDecoration(color: const Color(0xFF9033FF), borderRadius: BorderRadius.circular(20)),
+                decoration: BoxDecoration(
+                    color: const Color(0xFF9033FF),
+                    borderRadius: BorderRadius.circular(20)),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text("Edit Materi & Kuis", style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold)),
+                    const Text("Edit Materi & Kuis",
+                        style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold)),
                     const SizedBox(height: 8),
                     Text(
                       "Di dalam $judulKategori, Anda bisa mengelola materi dan kuis ke Firebase.",
-                      style: const TextStyle(color: Colors.white70, fontSize: 13, height: 1.4),
+                      style: const TextStyle(
+                          color: Colors.white70, fontSize: 13, height: 1.4),
                     ),
                   ],
                 ),
@@ -420,7 +550,11 @@ class CategoryDetailScreen extends StatelessWidget {
                 icon: Icons.book_rounded,
                 color: const Color(0xFF6B11D6),
                 onTap: () {
-                  Navigator.push(context, MaterialPageRoute(builder: (_) => ManageMateriScreen(kategoriTerpilih: judulKategori)));
+                  Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (_) => ManageMateriScreen(
+                              kategoriTerpilih: judulKategori)));
                 },
               ),
               const SizedBox(height: 16),
@@ -431,7 +565,11 @@ class CategoryDetailScreen extends StatelessWidget {
                 icon: Icons.quiz_rounded,
                 color: const Color(0xFFFFB300),
                 onTap: () {
-                  Navigator.push(context, MaterialPageRoute(builder: (_) => ManageQuizScreen(kategoriTerpilih: judulKategori)));
+                  Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (_) => ManageQuizScreen(
+                              kategoriTerpilih: judulKategori)));
                 },
               ),
             ],
@@ -441,7 +579,12 @@ class CategoryDetailScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildActionCard(BuildContext context, {required String title, required String subtitle, required IconData icon, required Color color, required VoidCallback onTap}) {
+  Widget _buildActionCard(BuildContext context,
+      {required String title,
+      required String subtitle,
+      required IconData icon,
+      required Color color,
+      required VoidCallback onTap}) {
     return InkWell(
       borderRadius: BorderRadius.circular(18),
       onTap: onTap,
@@ -451,14 +594,19 @@ class CategoryDetailScreen extends StatelessWidget {
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(18),
-          boxShadow: const [BoxShadow(color: Color(0x0A000000), blurRadius: 12, offset: Offset(0, 4))],
+          boxShadow: const [
+            BoxShadow(
+                color: Color(0x0A000000), blurRadius: 12, offset: Offset(0, 4))
+          ],
         ),
         child: Row(
           children: [
             Container(
               width: 48,
               height: 48,
-              decoration: BoxDecoration(color: color.withAlpha(38), borderRadius: BorderRadius.circular(14)),
+              decoration: BoxDecoration(
+                  color: color.withAlpha(38),
+                  borderRadius: BorderRadius.circular(14)),
               child: Icon(icon, color: color, size: 26),
             ),
             const SizedBox(width: 16),
@@ -466,13 +614,20 @@ class CategoryDetailScreen extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(title, style: const TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: Color(0xFF1E293B))),
+                  Text(title,
+                      style: const TextStyle(
+                          fontSize: 15,
+                          fontWeight: FontWeight.bold,
+                          color: Color(0xFF1E293B))),
                   const SizedBox(height: 6),
-                  Text(subtitle, style: const TextStyle(fontSize: 13, color: Color(0xFF64748B), height: 1.4)),
+                  Text(subtitle,
+                      style: const TextStyle(
+                          fontSize: 13, color: Color(0xFF64748B), height: 1.4)),
                 ],
               ),
             ),
-            const Icon(Icons.arrow_forward_ios_rounded, size: 16, color: Color(0xFF64748B)),
+            const Icon(Icons.arrow_forward_ios_rounded,
+                size: 16, color: Color(0xFF64748B)),
           ],
         ),
       ),
